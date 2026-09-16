@@ -963,7 +963,122 @@ private fun DinamicaStemPlotView(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // 1. Chart 1: DINÁMICA CONTINUA DE ACTIVACIÓN E_i(t) [TICK 20: SUMA EN CALIENTE]
+        // PANEL 2: DIAGRAMA DE PERSISTENCIA TDA (b, d) & ESTABILIDAD
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF03070E), RoundedCornerShape(4.dp))
+                .border(1.dp, Color(0xFF00E5FF), RoundedCornerShape(4.dp))
+                .padding(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "🌌 PANEL 2: DIAGRAMA DE PERSISTENCIA (b, d) // TDA",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF00E5FF)
+                )
+                Text(
+                    text = "d_B(D₁, D₂) ≤ ||f - g||_∞",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 7.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFFB300)
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(115.dp)
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val w = size.width
+                    val h = size.height
+                    val padL = 30f
+                    val padB = 20f
+                    val plotW = w - padL - 10f
+                    val plotH = h - padB - 10f
+
+                    // Grid
+                    val gridColor = Color(0xFF081E15)
+                    for (i in 0..4) {
+                        val gx = padL + (i * 0.25f) * plotW
+                        val gy = padB + (i * 0.25f) * plotH
+                        drawLine(gridColor, Offset(gx, 10f), Offset(gx, h - padB), strokeWidth = 0.5f)
+                        drawLine(gridColor, Offset(padL, h - gy), Offset(w - 10f, h - gy), strokeWidth = 0.5f)
+                    }
+
+                    // Diagonal line y = x
+                    val diagStart = Offset(padL, h - padB)
+                    val diagEnd = Offset(padL + minOf(plotW, plotH), h - padB - minOf(plotW, plotH))
+                    drawLine(
+                        Color(0xFF00FF66).copy(alpha = 0.6f),
+                        diagStart,
+                        diagEnd,
+                        strokeWidth = 1.2f,
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))
+                    )
+
+                    // Axes
+                    drawLine(Color(0xFF133829), Offset(padL, 10f), Offset(padL, h - padB), strokeWidth = 1.2f)
+                    drawLine(Color(0xFF133829), Offset(padL, h - padB), Offset(w - 10f, h - padB), strokeWidth = 1.2f)
+
+                    // H0 intervals (Cyan circles): (0.0, 0.25), (0.0, 0.50), (0.0, 0.85), (0.0, 2.0)
+                    val h0Points = listOf(
+                        Pair(0.0f, 0.25f),
+                        Pair(0.0f, 0.25f),
+                        Pair(0.0f, 0.50f),
+                        Pair(0.0f, 0.50f),
+                        Pair(0.0f, 0.85f),
+                        Pair(0.0f, 0.85f),
+                        Pair(0.0f, 2.00f)
+                    )
+                    h0Points.forEach { (b, d) ->
+                        val px = padL + (b / 1.5f) * plotW
+                        val py = (h - padB) - (d / 2.2f) * plotH
+                        drawCircle(Color(0xFF00E5FF).copy(alpha = 0.3f), radius = 6f, center = Offset(px, py))
+                        drawCircle(Color(0xFF00E5FF), radius = 3.5f, center = Offset(px, py))
+                        drawCircle(Color.White, radius = 1.2f, center = Offset(px, py))
+                    }
+
+                    // H1 intervals (Magenta triangles): (0.50, 1.20), (0.85, 1.70)
+                    val h1Points = listOf(
+                        Pair(0.50f, 1.20f),
+                        Pair(0.85f, 1.70f)
+                    )
+                    h1Points.forEach { (b, d) ->
+                        val px = padL + (b / 1.5f) * plotW
+                        val py = (h - padB) - (d / 2.2f) * plotH
+                        val path = Path().apply {
+                            moveTo(px, py - 5f)
+                            lineTo(px + 4.5f, py + 4f)
+                            lineTo(px - 4.5f, py + 4f)
+                            close()
+                        }
+                        drawPath(path, Color(0xFFFF007F))
+                        drawPath(path, Color.White, style = Stroke(width = 0.8f))
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("● Cyan: H₀ Componentes Conexas", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFF00E5FF))
+                Text("▲ Magenta: H₁ Cavidades 1D", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFFFF007F))
+                Text("Diagonal y=x", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFF00FF66))
+            }
+        }
+
+        // PANEL 3: POTENCIALES DINÁMICOS & AUTOCORRELACIÓN c(τ)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -978,11 +1093,11 @@ private fun DinamicaStemPlotView(
                 verticalAlignment = Alignment.Top
             ) {
                 Text(
-                    text = "📈 DINÁMICA CONTINUA DE ACTIVACIÓN E_i(t) [TICK 20: SUMA EN CALIENTE]",
+                    text = "📈 PANEL 3: POTENCIALES & AUTOCORRELACIÓN c(τ)",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 7.5.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF00E5FF),
+                    color = Color(0xFFFFB300),
                     modifier = Modifier.weight(1f, fill = false)
                 )
 
@@ -990,24 +1105,9 @@ private fun DinamicaStemPlotView(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(1.dp)
                 ) {
-                    Text(
-                        text = "— hub_central (E=1.20J)",
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 6.5.sp,
-                        color = Color(0xFFFFB300)
-                    )
-                    Text(
-                        text = "— cog_monje (E=1.38J)",
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 6.5.sp,
-                        color = Color(0xFF00E5FF)
-                    )
-                    Text(
-                        text = "— s_optico (E=0.74J)",
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 6.5.sp,
-                        color = Color(0xFF00FF66)
-                    )
+                    Text("— E(v3_hub) [Ámbar]", fontFamily = FontFamily.Monospace, fontSize = 6.5.sp, color = Color(0xFFFFB300))
+                    Text("— E(v1_sens) [Verde]", fontFamily = FontFamily.Monospace, fontSize = 6.5.sp, color = Color(0xFF00FF66))
+                    Text("--- c(τ) Tensor [Magenta]", fontFamily = FontFamily.Monospace, fontSize = 6.5.sp, color = Color(0xFFFF007F))
                 }
             }
 
@@ -1032,8 +1132,7 @@ private fun DinamicaStemPlotView(
                         gx += 35f
                     }
 
-                    // Tick 20 vertical line (Suma en Caliente boundary)
-                    val xTick = w * 0.42f
+                    val xTick = w * 0.40f
                     drawLine(
                         color = Color(0xFFFF3366),
                         start = Offset(xTick, 0f),
@@ -1042,67 +1141,35 @@ private fun DinamicaStemPlotView(
                         pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))
                     )
 
-                    // Curve 1: hub_central (Amber)
+                    // Curve 1: E(v3_hub) [Amber]
                     val pHub = Path().apply {
                         moveTo(0f, h * 0.84f)
-                        // Smooth rise up to tick
-                        cubicTo(
-                            xTick * 0.35f, h * 0.83f,
-                            xTick * 0.75f, h * 0.79f,
-                            xTick, h * 0.76f
-                        )
-                        // Vertical jump at tick
+                        cubicTo(xTick * 0.35f, h * 0.83f, xTick * 0.75f, h * 0.79f, xTick, h * 0.76f)
                         lineTo(xTick, h * 0.28f)
-                        // Exponential decay
-                        cubicTo(
-                            xTick + (w - xTick) * 0.25f, h * 0.35f,
-                            xTick + (w - xTick) * 0.65f, h * 0.40f,
-                            w, h * 0.42f
-                        )
+                        cubicTo(xTick + (w - xTick) * 0.25f, h * 0.35f, xTick + (w - xTick) * 0.65f, h * 0.40f, w, h * 0.42f)
                     }
                     drawPath(pHub, Color(0xFFFFB300), style = Stroke(width = 1.8f, cap = StrokeCap.Round))
 
-                    // Curve 2: cog_monje (Cyan)
-                    val pCog = Path().apply {
-                        moveTo(0f, h * 0.62f)
-                        cubicTo(
-                            xTick * 0.35f, h * 0.63f,
-                            xTick * 0.75f, h * 0.65f,
-                            xTick, h * 0.66f
-                        )
-                        // Spike jump at tick
-                        lineTo(xTick, h * 0.18f)
-                        // Gentle decay
-                        cubicTo(
-                            xTick + (w - xTick) * 0.28f, h * 0.26f,
-                            xTick + (w - xTick) * 0.70f, h * 0.30f,
-                            w, h * 0.32f
-                        )
-                    }
-                    drawPath(pCog, Color(0xFF00E5FF), style = Stroke(width = 1.8f, cap = StrokeCap.Round))
-
-                    // Curve 3: s_optico (Green)
-                    val pOpt = Path().apply {
+                    // Curve 2: E(v1_sens) [Green]
+                    val pSens = Path().apply {
                         moveTo(0f, h * 0.48f)
-                        cubicTo(
-                            xTick * 0.4f, h * 0.51f,
-                            xTick * 0.8f, h * 0.53f,
-                            xTick, h * 0.54f
-                        )
-                        // Subtle step
+                        cubicTo(xTick * 0.4f, h * 0.51f, xTick * 0.8f, h * 0.53f, xTick, h * 0.54f)
                         lineTo(xTick, h * 0.62f)
-                        cubicTo(
-                            xTick + (w - xTick) * 0.4f, h * 0.63f,
-                            xTick + (w - xTick) * 0.8f, h * 0.64f,
-                            w, h * 0.65f
-                        )
+                        cubicTo(xTick + (w - xTick) * 0.4f, h * 0.63f, xTick + (w - xTick) * 0.8f, h * 0.64f, w, h * 0.65f)
                     }
-                    drawPath(pOpt, Color(0xFF00FF66), style = Stroke(width = 1.8f, cap = StrokeCap.Round))
+                    drawPath(pSens, Color(0xFF00FF66), style = Stroke(width = 1.8f, cap = StrokeCap.Round))
+
+                    // Curve 3: Autocorrelación c(τ) [Magenta dashed]
+                    val pAuto = Path().apply {
+                        moveTo(0f, h * 0.15f)
+                        cubicTo(w * 0.25f, h * 0.30f, w * 0.55f, h * 0.68f, w, h * 0.88f)
+                    }
+                    drawPath(pAuto, Color(0xFFFF007F), style = Stroke(width = 1.5f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 4f))))
                 }
             }
         }
 
-        // 2. Chart 2: ENTROPÍA H(t) [CIAN] vs PESO HEBBIANO W(e,) [ÁMBAR]
+        // PANEL 4: COEVOLUCIÓN - KURAMOTO R(t) & ENTROPÍA H(t)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1117,14 +1184,14 @@ private fun DinamicaStemPlotView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "📊 ENTROPÍA H(t) [CIAN] vs PESO HEBBIANO W(e,) [ÁMBAR]",
+                    text = "📊 PANEL 4: COEVOLUCIÓN R(t) [CIAN] & H(t) [LAVANDA]",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 7.5.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF00E5FF)
                 )
                 Text(
-                    text = "Salto: 1.50 -> 2.78 bits",
+                    text = "R = ${String.format(java.util.Locale.US, "%.3f", telemetry.kuramotoOrderR)} | H = ${String.format(java.util.Locale.US, "%.2f", telemetry.entropyShannon)} bits",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 7.sp,
                     fontWeight = FontWeight.Bold,
@@ -1135,51 +1202,41 @@ private fun DinamicaStemPlotView(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(65.dp)
+                    .height(75.dp)
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val w = size.width
                     val h = size.height
-                    val xTick = w * 0.42f
+                    val xTick = w * 0.40f
 
-                    // Subtle grid
                     val gridColor = Color(0xFF081E15)
                     for (i in 1..3) {
                         val gy = h * (i * 0.25f)
                         drawLine(gridColor, Offset(0f, gy), Offset(w, gy), strokeWidth = 0.5f)
                     }
 
-                    // Cyan Solid Step Curve (Entropía Shannon)
-                    val pEntropy = Path().apply {
-                        moveTo(0f, h * 0.76f)
-                        lineTo(xTick, h * 0.76f)
-                        lineTo(xTick, h * 0.24f)
-                        lineTo(w, h * 0.25f)
+                    // Cyan Solid Step Curve (Kuramoto Order R(t))
+                    val pKuramoto = Path().apply {
+                        moveTo(0f, h * 0.85f)
+                        lineTo(xTick, h * 0.82f)
+                        lineTo(xTick, h * 0.35f)
+                        cubicTo(xTick + (w - xTick) * 0.3f, h * 0.28f, xTick + (w - xTick) * 0.7f, h * 0.15f, w, h * 0.12f)
                     }
-                    drawPath(pEntropy, Color(0xFF00E5FF), style = Stroke(width = 1.8f, cap = StrokeCap.Square))
+                    drawPath(pKuramoto, Color(0xFF00E5FF), style = Stroke(width = 1.8f, cap = StrokeCap.Round))
 
-                    // Amber Dashed Curve (Peso Hebbiano W(e))
-                    val pHebb = Path().apply {
-                        moveTo(0f, h * 0.90f)
-                        cubicTo(
-                            w * 0.35f, h * 0.80f,
-                            w * 0.70f, h * 0.62f,
-                            w, h * 0.55f
-                        )
+                    // Lavender Dashed Curve (Shannon Entropy H(t))
+                    val pEntropy = Path().apply {
+                        moveTo(0f, h * 0.20f)
+                        lineTo(xTick, h * 0.22f)
+                        lineTo(xTick, h * 0.55f)
+                        cubicTo(xTick + (w - xTick) * 0.3f, h * 0.65f, xTick + (w - xTick) * 0.7f, h * 0.78f, w, h * 0.82f)
                     }
-                    drawPath(
-                        pHebb,
-                        Color(0xFFFFB300),
-                        style = Stroke(
-                            width = 1.5f,
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))
-                        )
-                    )
+                    drawPath(pEntropy, Color(0xFFB388FF), style = Stroke(width = 1.5f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))))
                 }
             }
         }
 
-        // 3. Chart 3: ESPECTRO LAPLACIANO (STEM PLOT: stem(eig(L_H)))
+        // ESPECTRO LAPLACIANO DE ZHOU (STEM PLOT: stem(eig(L_Zhou)))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1188,18 +1245,31 @@ private fun DinamicaStemPlotView(
                 .padding(6.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(
-                text = "▦ ESPECTRO LAPLACIANO (STEM PLOT: stem(eig(L_H)))",
-                fontFamily = FontFamily.Monospace,
-                fontSize = 7.5.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF00E5FF)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "▦ AUTOVALORES DE ZHOU (STEM PLOT: stem(eig(L_Zhou)))",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 7.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF00FF66)
+                )
+                Text(
+                    text = "λ₂ = 0.3508 (GAP)",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 7.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFFB300)
+                )
+            }
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(75.dp)
+                    .height(80.dp)
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val w = size.width
@@ -1213,16 +1283,16 @@ private fun DinamicaStemPlotView(
                     }
 
                     // Baseline
-                    val baseY = h * 0.92f
+                    val baseY = h * 0.90f
                     drawLine(Color(0xFF0C2B1D), Offset(0f, baseY), Offset(w, baseY), strokeWidth = 1f)
 
-                    // 6 Eigenvalue Stems sorted ascending
-                    val stemFractions = floatArrayOf(0.15f, 0.30f, 0.45f, 0.60f, 0.75f, 0.90f)
-                    val stemHeights = floatArrayOf(0.14f, 0.22f, 0.36f, 0.54f, 0.72f, 0.90f)
+                    // 7 Eigenvalues: [0.0, 0.350873, 0.781674, 0.860906, 1.0, 1.0, 1.0]
+                    val lambdas = floatArrayOf(0.000000f, 0.350873f, 0.781674f, 0.860906f, 1.000000f, 1.000000f, 1.000000f)
+                    val stemPositions = floatArrayOf(0.10f, 0.23f, 0.36f, 0.50f, 0.64f, 0.77f, 0.90f)
 
-                    for (i in stemFractions.indices) {
-                        val sx = w * stemFractions[i]
-                        val sh = stemHeights[i] * (baseY - 8f)
+                    for (i in lambdas.indices) {
+                        val sx = w * stemPositions[i]
+                        val sh = (lambdas[i] * 0.85f) * (baseY - 10f)
                         val sy = baseY - sh
 
                         // Stem line
@@ -1737,55 +1807,65 @@ private fun MathMatricesBottomView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "SUBMATRIZ M(1:3, [1, 3]) // ÍNDICES MATLAB:",
+                text = "MATRIZ DE INCIDENCIA H (|V|=7, |E|=4):",
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 fontSize = 8.5.sp,
                 color = Color(0xFF00E5FF)
             )
             Text(
-                text = "${nodes.size}×${hyperedges.size} INCIDENCIA",
+                text = "7×4 POLIÁDICA",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.sp,
                 color = Color(0xFF86EFAC)
             )
         }
 
+        // 7 nodes x 4 hyperedges matrix
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            // Columns for e1, e2, e3, e4
+            val edgeLabels = listOf("e1(k=3)", "e2(k=3)", "e3(k=4)", "e4(k=4)")
             val matrixData = listOf(
-                listOf(1.10f, 0.00f, 0.44f),
-                listOf(0.90f, 0.00f, 0.44f),
-                listOf(1.25f, 1.40f, 0.44f)
+                listOf(1, 0, 0, 1), // v1
+                listOf(1, 0, 0, 0), // v2
+                listOf(1, 1, 0, 1), // v3
+                listOf(0, 1, 1, 1), // v4
+                listOf(0, 1, 1, 0), // v5
+                listOf(0, 0, 1, 1), // v6
+                listOf(0, 0, 1, 0)  // v7
             )
-            matrixData.forEachIndexed { rIdx, row ->
+
+            edgeLabels.forEachIndexed { eIdx, eLabel ->
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
-                        text = "Fila ${rIdx + 1}",
+                        text = eLabel,
                         fontFamily = FontFamily.Monospace,
-                        fontSize = 7.sp,
-                        color = Color.Gray
+                        fontSize = 6.5.sp,
+                        color = Color(0xFF00E5FF),
+                        maxLines = 1
                     )
-                    row.forEach { cellVal ->
+                    matrixData.forEachIndexed { vIdx, row ->
+                        val cellVal = row[eIdx]
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(22.dp)
-                                .background(if (cellVal > 0f) Color(0xFF0A261A) else Color(0xFF080D14), RoundedCornerShape(2.dp))
-                                .border(0.6.dp, if (cellVal > 0f) Color(0xFF00FF66) else Color(0xFF162534), RoundedCornerShape(2.dp)),
+                                .height(16.dp)
+                                .background(if (cellVal > 0) Color(0xFF0A261A) else Color(0xFF080D14), RoundedCornerShape(2.dp))
+                                .border(0.6.dp, if (cellVal > 0) Color(0xFF00FF66) else Color(0xFF162534), RoundedCornerShape(2.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = String.format(java.util.Locale.US, "%.2f", cellVal),
+                                text = "v${vIdx + 1}:$cellVal",
                                 fontFamily = FontFamily.Monospace,
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (cellVal > 0f) Color(0xFF00FF66) else Color(0xFF4A6572)
+                                fontSize = 7.sp,
+                                fontWeight = if (cellVal > 0) FontWeight.Bold else FontWeight.Normal,
+                                color = if (cellVal > 0) Color(0xFF00FF66) else Color(0xFF4A6572)
                             )
                         }
                     }
@@ -1884,14 +1964,14 @@ private fun EspectroAtractorBottomView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "ESPECTRO DEL LAPLACIANO L_H // ATRACTOR:",
+                text = "ESPECTRO DEL LAPLACIANO DE ZHOU L_Zhou // ATRACTOR:",
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 fontSize = 8.5.sp,
                 color = Color(0xFF00E5FF)
             )
             Text(
-                text = "λ₂ = 0.428 (GAP)",
+                text = "λ₂ = 0.3508 (FIEDLER GAP)",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.sp,
                 color = Color(0xFFFFB300)
@@ -1902,16 +1982,17 @@ private fun EspectroAtractorBottomView(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("λ₁=0.000", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color.Gray)
-            Text("λ₂=0.428", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF00FF66))
-            Text("λ₃=0.892", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF00E5FF))
-            Text("λ₄=1.240", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF86EFAC))
-            Text("λ₅=1.850", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFFFFB300))
-            Text("λ₆=2.410", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFFFF4081))
+            Text("λ₁=0.000", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color.Gray)
+            Text("λ₂=0.351", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFF00FF66))
+            Text("λ₃=0.782", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFF00E5FF))
+            Text("λ₄=0.861", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFF86EFAC))
+            Text("λ₅=1.000", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFFFFB300))
+            Text("λ₆=1.000", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFFFF4081))
+            Text("λ₇=1.000", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFFB388FF))
         }
 
         Text(
-            text = "• Manifold de Lyapunov: Convergencia estable en límite S4 autopoiético.",
+            text = "• Cota de Cheeger: h(H) ≥ λ₂/2 = 0.1754 | Tr(L_Zhou) = 4.9935",
             fontFamily = FontFamily.Monospace,
             fontSize = 7.5.sp,
             color = Color(0xFF6B8299)

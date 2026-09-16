@@ -1,5 +1,6 @@
 package com.example.l13brain.ui.components
 
+import com.example.l13brain.model.HypergraphTemporalRegime
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -90,12 +91,20 @@ fun Hgs9500DpoOscilloscope(
     hyperedges: List<HyperEdge>,
     telemetry: TelemetryState,
     onAmalgamatedSum: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    temporalRegime: HypergraphTemporalRegime = HypergraphTemporalRegime.PERSISTENTE,
+    externalFiltrationEps: Float? = null
 ) {
     var isRunning by remember { mutableStateOf(true) }
     var isSingleArmed by remember { mutableStateOf(false) }
     var triggerMode by remember { mutableStateOf("AUTO") }
     var filtrationEps by remember { mutableFloatStateOf(0.85f) }
+
+    LaunchedEffect(externalFiltrationEps) {
+        if (externalFiltrationEps != null) {
+            filtrationEps = externalFiltrationEps
+        }
+    }
     var persistenceTau by remember { mutableFloatStateOf(1.2f) }
     var bettiTriggerLevel by remember { mutableIntStateOf(2) }
     var hyperedgeKMax by remember { mutableIntStateOf(4) }
@@ -128,22 +137,34 @@ fun Hgs9500DpoOscilloscope(
             delay(200)
             if (isRunning && nodes.isNotEmpty()) {
                 val currentTime = System.currentTimeMillis()
-                val edgePairs = hyperedges.take(20).mapNotNull { edge ->
+                val currentNodes = nodes.toList()
+                val currentEdges = hyperedges.toList()
+                val nTotal = currentNodes.size.coerceAtLeast(1)
+
+                val edgePairs = currentEdges.take(20).mapNotNull { edge ->
                     if (edge.nodeIds.size >= 2) {
-                        val idx1 = nodes.indexOfFirst { it.id == edge.nodeIds[0] }.takeIf { it >= 0 } ?: 0
-                        val idx2 = nodes.indexOfFirst { it.id == edge.nodeIds[1] }.takeIf { it >= 0 } ?: 1
+                        val firstId = edge.nodeIds.getOrNull(0)
+                        val secondId = edge.nodeIds.getOrNull(1)
+                        val idx1 = currentNodes.indexOfFirst { it.id == firstId }.takeIf { it >= 0 } ?: 0
+                        val idx2 = currentNodes.indexOfFirst { it.id == secondId }.takeIf { it >= 0 } ?: 0
                         idx1 to idx2
                     } else null
                 }
-                val nTotal = nodes.size.coerceAtLeast(1)
-                val posList = nodes.take(20).mapIndexed { i, n ->
+
+                val posList = currentNodes.take(20).mapIndexed { i, n ->
                     val angle = (i.toFloat() / nTotal) * 6.283f + (if (autoOrbit) animOrbit * 0.017f else 0f)
                     val r = 2.6f + n.energy * 0.8f
                     Triple(cos(angle) * r, sin(angle) * r * 0.7f, sin(angle * 2.2f) * 1.3f)
                 }
-                dpoTrails.add(DpoTrail(currentTime, edgePairs, posList))
 
-                val maxAge = (persistenceTau * 1000).toLong()
+                if (posList.isNotEmpty()) {
+                    dpoTrails.add(DpoTrail(currentTime, edgePairs, posList))
+                }
+
+                val maxAge = (persistenceTau * 1000).toLong().coerceAtLeast(200L)
+                while (dpoTrails.size > 20) {
+                    dpoTrails.removeAt(0)
+                }
                 dpoTrails.removeAll { currentTime - it.time > maxAge }
             }
         }
@@ -386,15 +407,16 @@ fun Hgs9500DpoOscilloscope(
                     // 3. Draw DPO Phosphor Persistence Trails (Magenta #FF007F)
                     val now = System.currentTimeMillis()
                     val maxAge = (persistenceTau * 1000).toLong().coerceAtLeast(200L)
-                    dpoTrails.toList().forEach { trail ->
+                    val trailsSnapshot = try { dpoTrails.toList() } catch (e: Exception) { emptyList() }
+                    trailsSnapshot.forEach { trail ->
                         val age = (now - trail.time).toFloat() / maxAge
                         val alpha = (0.42f * (1f - age)).coerceIn(0f, 0.42f)
-                        if (alpha > 0.02f) {
+                        if (alpha > 0.02f && trail.positions.isNotEmpty()) {
                             val trailProj = trail.positions.map {
                                 project3D(it.first, it.second, it.third, rotX, currentRotY, cx, cy, baseScale)
                             }
                             trail.edges.forEach { (i1, i2) ->
-                                if (i1 < trailProj.size && i2 < trailProj.size) {
+                                if (i1 in trailProj.indices && i2 in trailProj.indices) {
                                     drawLine(
                                         color = Color(0xFFFF007F).copy(alpha = alpha),
                                         start = trailProj[i1].first,
@@ -411,12 +433,13 @@ fun Hgs9500DpoOscilloscope(
 
                     if (hyperedgeKMax >= 3 && projectedNodes.size >= 4) {
                         // Triads (2-simplices)
+                        val maxIdx = projectedNodes.size - 1
                         val triadTuples = listOf(
-                            Triple(0, 1, 3), // Big Central Amber Facet (matches image.png prominent facet)
-                            Triple(1, 2, 4), // Overlapping Cyan Facet
-                            Triple(2, 3, 5.coerceAtMost(projectedNodes.size - 1)), // Teal/Emerald Facet
-                            Triple(0, 4, 2), // Complementary facet
-                            Triple(3, 4, 1)  // Inner tetrahedral facet
+                            Triple(0, 1.coerceAtMost(maxIdx), 3.coerceAtMost(maxIdx)),
+                            Triple(1.coerceAtMost(maxIdx), 2.coerceAtMost(maxIdx), 4.coerceAtMost(maxIdx)),
+                            Triple(2.coerceAtMost(maxIdx), 3.coerceAtMost(maxIdx), 5.coerceAtMost(maxIdx)),
+                            Triple(0, 4.coerceAtMost(maxIdx), 2.coerceAtMost(maxIdx)),
+                            Triple(3.coerceAtMost(maxIdx), 4.coerceAtMost(maxIdx), 1.coerceAtMost(maxIdx))
                         )
 
                         val colors = listOf(
@@ -428,7 +451,7 @@ fun Hgs9500DpoOscilloscope(
                         )
 
                         triadTuples.forEachIndexed { fIdx, (i1, i2, i3) ->
-                            if (i1 < projectedNodes.size && i2 < projectedNodes.size && i3 < projectedNodes.size) {
+                            if (i1 in projectedNodes.indices && i2 in projectedNodes.indices && i3 in projectedNodes.indices && i1 != i2 && i2 != i3 && i1 != i3) {
                                 val p1 = projectedNodes[i1]
                                 val p2 = projectedNodes[i2]
                                 val p3 = projectedNodes[i3]

@@ -1,5 +1,6 @@
 package com.example.l13brain.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -26,6 +27,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.l13brain.model.HyperEdge
 import com.example.l13brain.model.HyperNode
+import com.example.l13brain.model.HypergraphTemporalRegime
+import com.example.l13brain.model.PersistenceBarcodeInterval
 import com.example.l13brain.model.TelemetryState
 import kotlin.math.cos
 import kotlin.math.sin
@@ -71,10 +76,21 @@ fun ToposcopioGrafoTab(
     onAutopoieticStep: () -> Unit = {},
     onInjectEnergy: () -> Unit = {},
     onWolframMutation: () -> Unit = {},
+    temporalRegime: HypergraphTemporalRegime = HypergraphTemporalRegime.PERSISTENTE,
+    filtrationEpsilon: Float = 0.85f,
+    isSweepActive: Boolean = false,
+    betti0: Int = 2,
+    betti1: Int = 1,
+    betti2: Int = 1,
+    persistenceIntervals: List<PersistenceBarcodeInterval> = emptyList(),
+    onRegimeChanged: (HypergraphTemporalRegime) -> Unit = {},
+    onEpsilonChanged: (Float) -> Unit = {},
+    onToggleSweep: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var viewMode by remember { mutableIntStateOf(2) } // 0: 2D Euler, 1: 3D DPO, 2: Ambos (Split)
     var showDensityOverlay by remember { mutableStateOf(false) }
+    var showBarcodePanel by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -151,7 +167,247 @@ fun ToposcopioGrafoTab(
             }
         }
 
-        // 2. Main Hypergraph Canvas Card (Convex Euler Ellipses & Bridge)
+        // 2. Temporal Regime Selector Bar (ESTÁTICO | CONTINUO | PERSISTENTE)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF040D14), RoundedCornerShape(6.dp))
+                .border(1.dp, Color(0xFF102636), RoundedCornerShape(6.dp))
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "RÉGIMEN:",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF88A0B0),
+                modifier = Modifier.padding(start = 4.dp, end = 6.dp)
+            )
+
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                HypergraphTemporalRegime.values().forEach { regime ->
+                    val isSel = (regime == temporalRegime)
+                    val activeColor = when (regime) {
+                        HypergraphTemporalRegime.ESTATICO -> Color(0xFFCCCCCC)
+                        HypergraphTemporalRegime.CONTINUO -> Color(0xFF00FF66)
+                        HypergraphTemporalRegime.PERSISTENTE -> Color(0xFF00E5FF)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(
+                                if (isSel) activeColor.copy(alpha = 0.18f) else Color(0xFF06131D),
+                                RoundedCornerShape(4.dp)
+                            )
+                            .border(
+                                1.dp,
+                                if (isSel) activeColor else Color(0xFF142C3D),
+                                RoundedCornerShape(4.dp)
+                            )
+                            .clickable { onRegimeChanged(regime) }
+                            .padding(vertical = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = regime.shortName,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 8.5.sp,
+                            color = if (isSel) activeColor else Color(0xFF6C8C9E)
+                        )
+                    }
+                }
+            }
+        }
+
+        // 3. Dynamic TDA Filtration & Persistent Homology Bar (when in PERSISTENTE regime)
+        if (temporalRegime == HypergraphTemporalRegime.PERSISTENTE) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF04141E), RoundedCornerShape(6.dp))
+                    .border(1.dp, Color(0xFF007799), RoundedCornerShape(6.dp))
+                    .padding(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Play/Pause Sweep
+                    Box(
+                        modifier = Modifier
+                            .background(if (isSweepActive) Color(0xFF0C3D28) else Color(0xFF0B2130), RoundedCornerShape(4.dp))
+                            .border(1.dp, if (isSweepActive) Color(0xFF00FF66) else Color(0xFF00E5FF), RoundedCornerShape(4.dp))
+                            .clickable { onToggleSweep() }
+                            .padding(horizontal = 6.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = if (isSweepActive) "⏸ PAUSAR ε" else "▶ BARRIDO ε",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 8.5.sp,
+                            color = if (isSweepActive) Color(0xFF00FF66) else Color(0xFF00E5FF)
+                        )
+                    }
+
+                    Text(
+                        text = "FILTRACIÓN: ε=${String.format(java.util.Locale.US, "%.2f", filtrationEpsilon)}",
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 9.sp,
+                        color = Color(0xFF00E5FF)
+                    )
+
+                    // Betti Numbers Indicators
+                    Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFF062316), RoundedCornerShape(3.dp))
+                                .border(0.8.dp, Color(0xFF00FF66), RoundedCornerShape(3.dp))
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text("β₀=$betti0", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00FF66))
+                        }
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFF082230), RoundedCornerShape(3.dp))
+                                .border(0.8.dp, Color(0xFF00E5FF), RoundedCornerShape(3.dp))
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text("β₁=$betti1", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00E5FF))
+                        }
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFF281C08), RoundedCornerShape(3.dp))
+                                .border(0.8.dp, Color(0xFFFFB300), RoundedCornerShape(3.dp))
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text("β₂=$betti2", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFFFFB300))
+                        }
+                    }
+
+                    // Barcode Drawer Toggle
+                    Box(
+                        modifier = Modifier
+                            .background(if (showBarcodePanel) Color(0xFF1E2638) else Color(0xFF0A131F), RoundedCornerShape(4.dp))
+                            .border(1.dp, Color(0xFF7FA8DE), RoundedCornerShape(4.dp))
+                            .clickable { showBarcodePanel = !showBarcodePanel }
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = if (showBarcodePanel) "BARCODE ▲" else "BARCODE ▼",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 8.sp,
+                            color = Color(0xFF7FA8DE)
+                        )
+                    }
+                }
+
+                // Epsilon Slider
+                Slider(
+                    value = filtrationEpsilon,
+                    onValueChange = onEpsilonChanged,
+                    valueRange = 0.0f..2.2f,
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color(0xFF00E5FF),
+                        activeTrackColor = Color(0xFF00A0C6),
+                        inactiveTrackColor = Color(0xFF0B2130)
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(22.dp)
+                )
+
+                // Expandable Barcode Interval Viewer
+                AnimatedVisibility(visible = showBarcodePanel) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF020910), RoundedCornerShape(4.dp))
+                            .border(0.8.dp, Color(0xFF10283A), RoundedCornerShape(4.dp))
+                            .padding(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "HOMOLOGÍA PERSISTENTE // INTERVALOS [NACIMIENTO -> MUERTE]:",
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 8.sp,
+                            color = Color(0xFF00E5FF)
+                        )
+                        persistenceIntervals.forEach { interval ->
+                            val isAlive = (filtrationEpsilon >= interval.birth && filtrationEpsilon <= interval.death)
+                            val barColor = when (interval.dimension) {
+                                0 -> Color(0xFF00FF66)
+                                1 -> Color(0xFF00E5FF)
+                                else -> Color(0xFFFFB300)
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "${interval.label} [${interval.birth}..${interval.death}]",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 7.5.sp,
+                                    color = if (isAlive) barColor else Color(0xFF4A6878),
+                                    maxLines = 1,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = if (isAlive) "● ACTIVO" else "○ INACTIVO",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 7.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isAlive) barColor else Color(0xFF384A54)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (temporalRegime == HypergraphTemporalRegime.ESTATICO) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF0A0F14), RoundedCornerShape(4.dp))
+                    .border(0.8.dp, Color(0xFF3A4B56), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "📸 CORTE t₀ // INVARIANTE TOPOLÓGICO CONGELADO (SIN OSCILACIÓN TEMPORAL)",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.5.sp,
+                    color = Color(0xFFB0C4DE)
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF061A12), RoundedCornerShape(4.dp))
+                    .border(0.8.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "⚡ DINÁMICA CONTINUA // KURAMOTO FLOW [R = ${String.format(java.util.Locale.US, "%.3f", telemetry.kuramotoOrderR)}] & DIFUSIÓN LAPLACIANA EN VIVO",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.5.sp,
+                    color = Color(0xFF00FF66)
+                )
+            }
+        }
+
+        // 4. Main Hypergraph Canvas Card (Convex Euler Ellipses & Bridge)
         if (viewMode == 0 || viewMode == 2) {
             Box(
                 modifier = Modifier
@@ -165,6 +421,8 @@ fun ToposcopioGrafoTab(
                     hyperedges = hyperedges,
                     selectedNodeId = selectedNodeId,
                     showDensityOverlay = showDensityOverlay,
+                    temporalRegime = temporalRegime,
+                    filtrationEpsilon = filtrationEpsilon,
                     onNodeSelected = onNodeSelected,
                     onNodeDragged = onNodeDragged,
                     modifier = Modifier.fillMaxSize()
@@ -191,7 +449,7 @@ fun ToposcopioGrafoTab(
             }
         }
 
-        // 3. Quick Topology Action Pills
+        // 5. Quick Topology Action Pills
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -205,18 +463,20 @@ fun ToposcopioGrafoTab(
             TopGraphActionPill("W REGLA WOLFRAM", Color(0xFFFF4081), onWolframMutation)
         }
 
-        // 4. HGS-9500DPO Real-Time Persistent Hypergraph Oscilloscope (Industrial Metrology Grade)
+        // 6. HGS-9500DPO Real-Time Persistent Hypergraph Oscilloscope (Industrial Metrology Grade)
         if (viewMode == 1 || viewMode == 2) {
             Hgs9500DpoOscilloscope(
                 nodes = nodes,
                 hyperedges = hyperedges,
                 telemetry = telemetry,
                 onAmalgamatedSum = onAmalgamatedSum,
+                temporalRegime = temporalRegime,
+                externalFiltrationEps = filtrationEpsilon,
                 modifier = Modifier.fillMaxWidth()
             )
         }
 
-        // 5. Zoom / Topology Footer Line
+        // 7. Zoom / Topology Footer Line
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -285,6 +545,8 @@ fun HypergraphCanvas(
     hyperedges: List<HyperEdge>,
     selectedNodeId: String?,
     showDensityOverlay: Boolean = false,
+    temporalRegime: HypergraphTemporalRegime = HypergraphTemporalRegime.PERSISTENTE,
+    filtrationEpsilon: Float = 0.85f,
     onNodeSelected: (String) -> Unit,
     onNodeDragged: (String, Float, Float) -> Unit,
     modifier: Modifier = Modifier
@@ -363,11 +625,19 @@ fun HypergraphCanvas(
             drawDensityHeatmap(width, height, nodes)
         }
 
-        // 2. Draw Hypergraph Ellipses and Laser Lines
-        drawEulerHypergraph(width, height, nodes, hyperedges, pulseAlpha)
+        // 2. Draw Hypergraph Ellipses and Laser Lines with TDA Persistence Filtering
+        drawEulerHypergraph(
+            width = width,
+            height = height,
+            nodes = nodes,
+            hyperedges = hyperedges,
+            pulseAlpha = if (temporalRegime == HypergraphTemporalRegime.ESTATICO) 0.8f else pulseAlpha,
+            temporalRegime = temporalRegime,
+            filtrationEpsilon = filtrationEpsilon
+        )
 
         // 3. Draw Nodes with halos and labels
-        drawTopNodes(width, height, nodes, selectedNodeId, pulseAlpha)
+        drawTopNodes(width, height, nodes, selectedNodeId, if (temporalRegime == HypergraphTemporalRegime.ESTATICO) 0.8f else pulseAlpha)
     }
 }
 
@@ -413,7 +683,9 @@ private fun DrawScope.drawEulerHypergraph(
     height: Float,
     nodes: List<HyperNode>,
     hyperedges: List<HyperEdge>,
-    pulseAlpha: Float
+    pulseAlpha: Float,
+    temporalRegime: HypergraphTemporalRegime = HypergraphTemporalRegime.PERSISTENTE,
+    filtrationEpsilon: Float = 0.85f
 ) {
     val nodeMap = nodes.associateBy { it.id }
 
@@ -445,6 +717,23 @@ private fun DrawScope.drawEulerHypergraph(
         val memberNodes = edge.nodeIds.mapNotNull { nodeMap[it] }
         if (memberNodes.isEmpty()) continue
 
+        // Check TDA Persistence filtration activity
+        val isAliveInTda = if (temporalRegime == HypergraphTemporalRegime.PERSISTENTE) {
+            val edgeBirth = when (edge.id) {
+                "e1_sensorial" -> 0.00f
+                "e2_cognitiva_s4" -> 0.60f
+                "e3_puente" -> 0.45f
+                else -> (edge.weight * 0.35f).coerceIn(0.0f, 1.5f)
+            }
+            val edgeDeath = when (edge.id) {
+                "e1_sensorial" -> 1.40f
+                "e2_cognitiva_s4" -> 1.85f
+                "e3_puente" -> 2.10f
+                else -> edgeBirth + 1.2f
+            }
+            filtrationEpsilon in edgeBirth..edgeDeath
+        } else true
+
         val memberPoints = memberNodes.map { node ->
             Offset(
                 node.x.coerceIn(0.08f, 0.92f) * width,
@@ -469,44 +758,70 @@ private fun DrawScope.drawEulerHypergraph(
         val boxWidth = ((maxX - minX) + padX * 2f).coerceAtMost(width - boxLeft - 6f)
         val boxHeight = ((maxY - minY) + padY * 2f).coerceAtMost(height - boxTop - 6f)
 
-        // Draw bounding polyadic envelope / ellipse
-        val glowAlpha = (0.07f * edge.phosphorLuminance * (0.8f + pulseAlpha * 0.4f)).coerceIn(0.04f, 0.22f)
-        drawOval(
-            color = edgeColor.copy(alpha = glowAlpha),
-            topLeft = Offset(boxLeft, boxTop),
-            size = Size(boxWidth, boxHeight)
-        )
-        drawOval(
-            color = edgeColor.copy(alpha = (0.75f * edge.phosphorLuminance).coerceIn(0.4f, 0.95f)),
-            topLeft = Offset(boxLeft, boxTop),
-            size = Size(boxWidth, boxHeight),
-            style = Stroke(width = (2.0f * edge.afterglowTrailRadius).coerceIn(1.5f, 3.5f))
-        )
+        if (isAliveInTda) {
+            // Draw full vibrant bounding polyadic envelope / ellipse
+            val glowAlpha = (0.07f * edge.phosphorLuminance * (0.8f + pulseAlpha * 0.4f)).coerceIn(0.04f, 0.22f)
+            drawOval(
+                color = edgeColor.copy(alpha = glowAlpha),
+                topLeft = Offset(boxLeft, boxTop),
+                size = Size(boxWidth, boxHeight)
+            )
+            drawOval(
+                color = edgeColor.copy(alpha = (0.75f * edge.phosphorLuminance).coerceIn(0.4f, 0.95f)),
+                topLeft = Offset(boxLeft, boxTop),
+                size = Size(boxWidth, boxHeight),
+                style = Stroke(width = (2.0f * edge.afterglowTrailRadius).coerceIn(1.5f, 3.5f))
+            )
 
-        // Laser lines from centroid to all member vertices
-        for (pt in memberPoints) {
-            drawLine(
-                color = edgeColor.copy(alpha = 0.45f * edge.phosphorLuminance),
-                start = centroid,
-                end = pt,
-                strokeWidth = 1.2f
+            // Laser lines from centroid to all member vertices
+            for (pt in memberPoints) {
+                drawLine(
+                    color = edgeColor.copy(alpha = 0.45f * edge.phosphorLuminance),
+                    start = centroid,
+                    end = pt,
+                    strokeWidth = 1.2f
+                )
+            }
+
+            // Draw Tag Box at centroid
+            val tagText = "${edge.label} (k=${edge.nodeIds.size}) • W=${String.format(java.util.Locale.US, "%.2f", edge.weight)}"
+            val tagCenter = Offset(
+                centroid.x.coerceIn(80f, width - 80f),
+                (centroid.y - 18f).coerceIn(24f, height - 24f)
+            )
+            drawTagBox(
+                text = tagText,
+                center = tagCenter,
+                textColor = edgeColor,
+                borderColor = edgeColor,
+                bgColor = Color(0xFF030A12)
+            )
+        } else {
+            // Ghost filtered mode: subtle dashed outline showing inactive homological component
+            drawOval(
+                color = edgeColor.copy(alpha = 0.03f),
+                topLeft = Offset(boxLeft, boxTop),
+                size = Size(boxWidth, boxHeight)
+            )
+            drawOval(
+                color = edgeColor.copy(alpha = 0.18f),
+                topLeft = Offset(boxLeft, boxTop),
+                size = Size(boxWidth, boxHeight),
+                style = Stroke(width = 1.0f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f)))
+            )
+            // Ghost tag box
+            val tagCenter = Offset(
+                centroid.x.coerceIn(80f, width - 80f),
+                (centroid.y - 18f).coerceIn(24f, height - 24f)
+            )
+            drawTagBox(
+                text = "${edge.id} [TDA FILTRADO: fuera de ε]",
+                center = tagCenter,
+                textColor = Color(0xFF5A7280),
+                borderColor = Color(0xFF2E404C),
+                bgColor = Color(0xFF03080E)
             )
         }
-
-        // Draw Tag Box at centroid
-        val dpoPct = (edge.phosphorLuminance * 100).toInt()
-        val tagText = "${edge.label} (k=${edge.nodeIds.size}) • W=${String.format(java.util.Locale.US, "%.2f", edge.weight)}"
-        val tagCenter = Offset(
-            centroid.x.coerceIn(80f, width - 80f),
-            (centroid.y - 18f).coerceIn(24f, height - 24f)
-        )
-        drawTagBox(
-            text = tagText,
-            center = tagCenter,
-            textColor = edgeColor,
-            borderColor = edgeColor,
-            bgColor = Color(0xFF030A12)
-        )
     }
 }
 

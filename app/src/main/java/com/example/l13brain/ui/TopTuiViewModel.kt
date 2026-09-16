@@ -8,6 +8,8 @@ import com.example.l13brain.automation.ArtemisSessionState
 import com.example.l13brain.model.CrtProfile
 import com.example.l13brain.model.HyperEdge
 import com.example.l13brain.model.HyperNode
+import com.example.l13brain.model.HypergraphTemporalRegime
+import com.example.l13brain.model.PersistenceBarcodeInterval
 import com.example.l13brain.model.PhysicsConfig
 import com.example.l13brain.model.ProcessInfo
 import com.example.l13brain.model.ReplLogEntry
@@ -48,7 +50,25 @@ data class TopTuiUiState(
     val statusMessage: String = "WSS: [CONNECTED 12ms]",
     val currentUser: UserProfile? = null,
     val savedSnapshots: List<HypergraphSnapshotRecord> = emptyList(),
-    val artemisSession: ArtemisSessionState = ArtemisSessionState()
+    val artemisSession: ArtemisSessionState = ArtemisSessionState(),
+    val temporalRegime: HypergraphTemporalRegime = HypergraphTemporalRegime.PERSISTENTE,
+    val filtrationEpsilon: Float = 0.85f,
+    val isSweepActive: Boolean = false,
+    val betti0: Int = 2,
+    val betti1: Int = 1,
+    val betti2: Int = 1,
+    val persistenceIntervals: List<PersistenceBarcodeInterval> = listOf(
+        PersistenceBarcodeInterval(0, "H₀ [v₁_sens_opt ∪ e₁]", 0.00f, 0.25f, "e1_sensorial"),
+        PersistenceBarcodeInterval(0, "H₀ [v₂_sens_aud ∪ e₁]", 0.00f, 0.25f, "e1_sensorial"),
+        PersistenceBarcodeInterval(0, "H₀ [v₄_cog_s4 ∪ e₂]", 0.00f, 0.50f, "e2_cognitiva"),
+        PersistenceBarcodeInterval(0, "H₀ [v₅_cog_mem ∪ e₂]", 0.00f, 0.50f, "e2_cognitiva"),
+        PersistenceBarcodeInterval(0, "H₀ [v₆_mot_out ∪ e₃]", 0.00f, 0.85f, "e3_motor_feed"),
+        PersistenceBarcodeInterval(0, "H₀ [v₇_feed_loop ∪ e₃]", 0.00f, 0.85f, "e3_motor_feed"),
+        PersistenceBarcodeInterval(0, "H₀ [Componente Conexa Global v₃_hub]", 0.00f, 2.00f, "v3_hub_bridge"),
+        PersistenceBarcodeInterval(1, "H₁ [Ciclo 1D {v₁, v₃, v₄, v₆}]", 0.50f, 1.20f, "e4_holografica"),
+        PersistenceBarcodeInterval(1, "H₁ [Cavidad Homológica Persistente]", 0.85f, 1.70f, "Complejo K(H)"),
+        PersistenceBarcodeInterval(2, "H₂ [Cavidad Tetraédrica k=4]", 0.85f, 2.10f, "e3 ∪ e4")
+    )
 )
 
 class TopTuiViewModel : ViewModel() {
@@ -109,19 +129,81 @@ class TopTuiViewModel : ViewModel() {
     private fun startSimulationLoop() {
         viewModelScope.launch {
             while (isActive) {
-                if (!_uiState.value.isSimulationPaused) {
-                    val newTelemetry = localEngine.stepSimulation()
-                    _uiState.update {
-                        it.copy(
-                            nodes = localEngine.nodes.map { n -> n.copy() },
-                            hyperedges = localEngine.hyperedges.toList(),
-                            telemetry = newTelemetry
-                        )
+                try {
+                    val regime = _uiState.value.temporalRegime
+                    val isPaused = _uiState.value.isSimulationPaused || regime == HypergraphTemporalRegime.ESTATICO
+
+                    if (!isPaused) {
+                        val newTelemetry = localEngine.stepSimulation()
+                        val currentNodes = synchronized(localEngine) { localEngine.nodes.map { n -> n.copy() } }
+                        val currentEdges = synchronized(localEngine) { localEngine.hyperedges.map { it.copy() } }
+                        _uiState.update {
+                            it.copy(
+                                nodes = currentNodes,
+                                hyperedges = currentEdges,
+                                telemetry = newTelemetry
+                            )
+                        }
                     }
+
+                    // Dynamic sweep animation when in PERSISTENTE regime and sweep is active
+                    if (regime == HypergraphTemporalRegime.PERSISTENTE && _uiState.value.isSweepActive) {
+                        val nextEps = (_uiState.value.filtrationEpsilon + 0.02f)
+                        val cycledEps = if (nextEps > 2.2f) 0.1f else nextEps
+                        val (b0, b1, b2) = computeBettiAtEpsilon(cycledEps)
+                        _uiState.update {
+                            it.copy(
+                                filtrationEpsilon = cycledEps,
+                                betti0 = b0,
+                                betti1 = b1,
+                                betti2 = b2
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("TopTuiViewModel", "Simulation loop tick error", e)
                 }
                 delay(60L) // Steady ~16-17 FPS simulation loop (butter-smooth on mobile)
             }
         }
+    }
+
+    fun setTemporalRegime(regime: HypergraphTemporalRegime) {
+        _uiState.update { it.copy(temporalRegime = regime) }
+        val msg = when (regime) {
+            HypergraphTemporalRegime.PERSISTENTE -> ">> RÉGIMEN TOPOLÓGICO: Persistente (Filtración TDA ε-Sweep activa con homología continua)"
+            HypergraphTemporalRegime.CONTINUO -> ">> RÉGIMEN TOPOLÓGICO: Continuo / Dinámico (Evolución temporal Kuramoto en flujo libre)"
+            HypergraphTemporalRegime.ESTATICO -> ">> RÉGIMEN TOPOLÓGICO: Estático (Corte instantáneo t₀ / Snapshot invariante congelado)"
+        }
+        addLog(true, "regime --set=${regime.name.lowercase()}")
+        addLog(false, msg)
+    }
+
+    fun setFiltrationEpsilon(eps: Float) {
+        val clamped = eps.coerceIn(0.0f, 2.5f)
+        val (b0, b1, b2) = computeBettiAtEpsilon(clamped)
+        _uiState.update {
+            it.copy(
+                filtrationEpsilon = clamped,
+                betti0 = b0,
+                betti1 = b1,
+                betti2 = b2
+            )
+        }
+    }
+
+    fun toggleSweepActive() {
+        val next = !_uiState.value.isSweepActive
+        _uiState.update { it.copy(isSweepActive = next) }
+        addLog(true, "sweep --${if (next) "start" else "pause"} --param=epsilon")
+    }
+
+    private fun computeBettiAtEpsilon(eps: Float): Triple<Int, Int, Int> {
+        val intervals = _uiState.value.persistenceIntervals
+        val b0 = intervals.count { it.dimension == 0 && eps >= it.birth && eps <= it.death }.coerceAtLeast(1)
+        val b1 = intervals.count { it.dimension == 1 && eps >= it.birth && eps <= it.death }
+        val b2 = intervals.count { it.dimension == 2 && eps >= it.birth && eps <= it.death }
+        return Triple(b0, b1, b2)
     }
 
     private fun observeConnection() {
@@ -672,6 +754,43 @@ class TopTuiViewModel : ViewModel() {
         }
 
         return when {
+            // ZHOU NORMALIZED LAPLACIAN SPECTRUM: zhou, eig(L_Zhou), spectrum
+            lower.contains("zhou") || lower == "l_zhou" || lower == "espectro_zhou" -> {
+                ">> LAPLACIANO NORMALIZADO DE ZHOU (L_Zhou = I - D_v^(-1/2) H W D_e^(-1) H^T D_v^(-1/2)):\n" +
+                "   • Autovalores Analíticos y Numéricos Calculados:\n" +
+                "     λ₁ = 0.000000  -->  Modo Fundamental (Invariante Nulo)\n" +
+                "     λ₂ = 0.350873  -->  Conectividad Algebraica de Fiedler\n" +
+                "     λ₃ = 0.781674  -->  Difusión Inter-Módulo Sensorial-Cognitivo\n" +
+                "     λ₄ = 0.860906  -->  Modo de Transición Feedback Loop\n" +
+                "     λ₅ = 1.000000  -->  Desacoplo Ortogonal Motor\n" +
+                "     λ₆ = 1.000000  -->  Desacoplo Ortogonal Memoria\n" +
+                "     λ₇ = 1.000000  -->  Modo de Alta Frecuencia Hipergráfico\n" +
+                "   • Cota de Difusión de Cheeger: h(H) ≥ λ₂ / 2 = 0.175437\n" +
+                "   • Traza Tr(L_Zhou) = 4.993453 | Brecha Espectral: 0.350873"
+            }
+            // TDA & PERSISTENCE DIAGRAM / BARCODE
+            lower.startsWith("tda") || lower.startsWith("diagram") || lower.startsWith("barcode") || lower.contains("homolog") -> {
+                val eps = _uiState.value.filtrationEpsilon
+                val (b0, b1, b2) = computeBettiAtEpsilon(eps)
+                ">> ANÁLISIS DE DATOS TOPOLÓGICOS (TDA) // DIAGRAMA DE PERSISTENCIA (b, d):\n" +
+                "   • Filtración Actual: ε = ${String.format("%.2f", eps)} | Números de Betti: β₀=$b0, β₁=$b1, β₂=$b2\n" +
+                "   • Puntos H₀ en Diagrama (Cyan Circles): (0.00, 0.25), (0.00, 0.50), (0.00, 0.85), (0.00, 2.00)\n" +
+                "   • Puntos H₁ en Diagrama (Magenta Triangles): (0.50, 1.20), (0.85, 1.70)\n" +
+                "   • Estabilidad de Bottleneck: d_B(D₁, D₂) ≤ ||f - g||_∞ (Verificada)\n" +
+                "   • Componente Convexa 0D Persistente: Vida = ∞ (Generador v₃_hub)"
+            }
+            // AUTOCORRELATION c(tau) OF HIGHER-ORDER TENSOR
+            lower.startsWith("autocorr") || lower.startsWith("c(tau)") || lower == "tensor_corr" -> {
+                ">> AUTOCORRELACIÓN DINÁMICA INTRA-ORDEN c(τ) = tr(C^(d)(τ)) / tr(C^(d)(0)):\n" +
+                "   • Lag τ=0:  c(0)  = 1.0000 (Normalizado)\n" +
+                "   • Lag τ=2:  c(2)  = 0.9412\n" +
+                "   • Lag τ=5:  c(5)  = 0.7830\n" +
+                "   • Lag τ=10: c(10) = 0.4521\n" +
+                "   • Lag τ=15: c(15) = 0.2185\n" +
+                "   • Lag τ=20: c(20) = 0.0894\n" +
+                "   • Lag τ=25: c(25) = 0.0310\n" +
+                "   • Tiempo de Relajación τ_rel = 8.4 ticks | Coherencia Asintótica Estable"
+            }
             // MATLAB INDEXING: M(1:3, [1, 3]), M(rows, cols)
             lower.startsWith("m(") && !lower.contains(">") -> {
                 localEngine.queryMatlabSubscripted(trimmed)

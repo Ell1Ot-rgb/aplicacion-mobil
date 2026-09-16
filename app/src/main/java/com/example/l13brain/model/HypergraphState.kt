@@ -100,3 +100,18 @@ data class ReplLogEntry(
     val text: String,
     val timestamp: Long = System.currentTimeMillis()
 )
+
+enum class HypergraphTemporalRegime(val label: String, val badge: String, val shortName: String) {
+    ESTATICO("ESTÁTICO (SNAPSHOT t₀)", "ESTÁTICO", "ESTÁTICO"),
+    CONTINUO("CONTINUO (DINÁMICO)", "CONTINUO", "CONTINUO"),
+    PERSISTENTE("PERSISTENTE (TDA ε-SWEEP)", "PERSISTENTE", "PERSISTENTE")
+}
+
+data class PersistenceBarcodeInterval(
+    val dimension: Int, // 0: H0 (componentes), 1: H1 (ciclos/túneles), 2: H2 (cavidades)
+    val label: String,
+    val birth: Float,
+    val death: Float,
+    val generator: String
+)
+

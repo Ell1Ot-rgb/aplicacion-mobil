@@ -90,7 +90,17 @@ fun TopTuiMainScreen(
                         onBergeDual = { topTuiViewModel.executeBergeDual() },
                         onAutopoieticStep = { topTuiViewModel.executeAutopoieticStep() },
                         onInjectEnergy = { topTuiViewModel.injectEnergyToSelected(0.5f) },
-                        onWolframMutation = { topTuiViewModel.executeWolframMutation() }
+                        onWolframMutation = { topTuiViewModel.executeWolframMutation() },
+                        temporalRegime = state.temporalRegime,
+                        filtrationEpsilon = state.filtrationEpsilon,
+                        isSweepActive = state.isSweepActive,
+                        betti0 = state.betti0,
+                        betti1 = state.betti1,
+                        betti2 = state.betti2,
+                        persistenceIntervals = state.persistenceIntervals,
+                        onRegimeChanged = { regime -> topTuiViewModel.setTemporalRegime(regime) },
+                        onEpsilonChanged = { eps -> topTuiViewModel.setFiltrationEpsilon(eps) },
+                        onToggleSweep = { topTuiViewModel.toggleSweepActive() }
                     )
                 }
                 1 -> {

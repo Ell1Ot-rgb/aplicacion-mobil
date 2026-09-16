@@ -54,6 +54,7 @@ class LocalSimulationEngine {
         resetToDefaultMockupState()
     }
 
+    @Synchronized
     fun resetToDefaultMockupState() {
         nodes.clear()
         hyperedges.clear()
@@ -66,18 +67,20 @@ class LocalSimulationEngine {
         sumExecutionTick = 20L
         sumExecutionCount = 0
 
-        // Initialize Nodes matching balanced, well-proportioned hypergraph specification
-        nodes.add(HyperNode("s_optico", "s_optico", energy = 1.10f, x = 0.25f, y = 0.36f, modalState = "[] Phi (Sensorial)", degree = 2, phase = 0.35f, naturalFreq = 0.12f))
-        nodes.add(HyperNode("s_acustico", "s_acustico", energy = 0.90f, x = 0.25f, y = 0.64f, modalState = "<> Psi (Sensorial)", degree = 2, phase = 0.45f, naturalFreq = 0.13f))
-        nodes.add(HyperNode("hub_central", "hub_central", energy = 1.25f, x = 0.50f, y = 0.50f, modalState = "[] Phi (Transductor)", degree = 3, phase = 1.85f, naturalFreq = 0.15f))
-        nodes.add(HyperNode("cog_monje", "cog_monje", energy = 1.40f, x = 0.75f, y = 0.36f, modalState = "[] Phi (Cognitivo S4)", degree = 3, phase = 3.20f, naturalFreq = 0.18f))
-        nodes.add(HyperNode("cog_s4", "cog_s4", energy = 0.85f, x = 0.75f, y = 0.64f, modalState = "<> Chi (Cognitivo S4)", degree = 2, phase = 3.40f, naturalFreq = 0.19f))
-        nodes.add(HyperNode("cog_memoria", "cog_memoria", energy = 0.50f, x = 0.58f, y = 0.74f, modalState = "[] Box-Phi", degree = 2, phase = 3.10f, naturalFreq = 0.17f))
+        // Initialize 7 Canonical Nodes matching theoretical architecture
+        nodes.add(HyperNode("v1_sens_opt", "v1_sens_opt", energy = 1.20f, x = 0.18f, y = 0.23f, modalState = "[] Sensorial (Opt)", degree = 2, phase = 0.35f, naturalFreq = 1.00f))
+        nodes.add(HyperNode("v2_sens_aud", "v2_sens_aud", energy = 0.80f, x = 0.19f, y = 0.72f, modalState = "<> Sensorial (Aud)", degree = 1, phase = 0.45f, naturalFreq = 1.05f))
+        nodes.add(HyperNode("v3_hub_bridge", "v3_hub_bridge", energy = 1.50f, x = 0.44f, y = 0.47f, modalState = "[] Hub Confluencia", degree = 3, phase = 1.85f, naturalFreq = 1.02f))
+        nodes.add(HyperNode("v4_cog_s4", "v4_cog_s4", energy = 1.40f, x = 0.69f, y = 0.20f, modalState = "[] Modal S4 (Cog)", degree = 3, phase = 3.20f, naturalFreq = 1.10f))
+        nodes.add(HyperNode("v5_cog_mem", "v5_cog_mem", energy = 0.90f, x = 0.68f, y = 0.70f, modalState = "[] Memoria Holística", degree = 2, phase = 3.40f, naturalFreq = 0.95f))
+        nodes.add(HyperNode("v6_mot_out", "v6_mot_out", energy = 0.60f, x = 0.88f, y = 0.40f, modalState = "<> Motor Salida", degree = 2, phase = 1.10f, naturalFreq = 1.08f))
+        nodes.add(HyperNode("v7_feed_loop", "v7_feed_loop", energy = 0.40f, x = 0.87f, y = 0.82f, modalState = "[] Feedback Loop", degree = 1, phase = 2.50f, naturalFreq = 0.98f))
 
-        // Initialize Heterogeneous Hyperedges (k=3, k=4)
-        hyperedges.add(HyperEdge("e1_sensorial", "e1_sensorial (k=3)", weight = 1.20f, nodeIds = listOf("s_optico", "s_acustico", "hub_central"), colorHex = 0xFF00FF66L))
-        hyperedges.add(HyperEdge("e2_cognitiva_s4", "e2_cognitiva_s4 (k=4)", weight = 1.50f, nodeIds = listOf("hub_central", "cog_monje", "cog_s4", "cog_memoria"), colorHex = 0xFFFF007FL))
-        hyperedges.add(HyperEdge("e3_puente", "e3_puente (k=3)", weight = 1.00f, nodeIds = listOf("s_optico", "hub_central", "cog_monje"), colorHex = 0xFF00E5FFL))
+        // Initialize 4 Heterogeneous Polyadic Hyperedges (k=3, k=4)
+        hyperedges.add(HyperEdge("e1_sensorial", "e1: Sensorial (k=3)", weight = 1.20f, nodeIds = listOf("v1_sens_opt", "v2_sens_aud", "v3_hub_bridge"), colorHex = 0xFF00FF66L))
+        hyperedges.add(HyperEdge("e2_cognitiva", "e2: Cognitiva (k=3)", weight = 1.50f, nodeIds = listOf("v3_hub_bridge", "v4_cog_s4", "v5_cog_mem"), colorHex = 0xFFFF007FL))
+        hyperedges.add(HyperEdge("e3_motor_feed", "e3: Motor-Feedback (k=4)", weight = 1.80f, nodeIds = listOf("v4_cog_s4", "v5_cog_mem", "v6_mot_out", "v7_feed_loop"), colorHex = 0xFFFFB703L))
+        hyperedges.add(HyperEdge("e4_holografica", "e4: Holográfica (k=4)", weight = 1.00f, nodeIds = listOf("v1_sens_opt", "v3_hub_bridge", "v4_cog_s4", "v6_mot_out"), colorHex = 0xFF00E5FFL))
 
         // Initialize Processes
         processes.add(ProcessInfo(1042, "l13app", 38.5f, 18.4f, "RUN", "l13_brain_engine", isEngineProcess = true))
@@ -91,11 +94,12 @@ class LocalSimulationEngine {
         }
 
         // Pre-fill history baseline
-        kuramotoHistory.add(0.95f)
-        entropyHistory.add(1.50f)
-        hebbianWeightHistory.add(1.00f)
+        kuramotoHistory.add(0.32f)
+        entropyHistory.add(2.72f)
+        hebbianWeightHistory.add(1.20f)
     }
 
+    @Synchronized
     fun stepSimulation(): TelemetryState {
         tickCount++
 
