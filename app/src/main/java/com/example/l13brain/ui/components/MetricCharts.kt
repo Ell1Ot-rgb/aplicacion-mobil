@@ -1,5 +1,11 @@
 package com.example.l13brain.ui.components
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -140,7 +147,7 @@ fun TelemetriaTensoresTab(
                     .fillMaxWidth()
                     .height(70.dp)
             ) {
-                KuramotoSineWaveCanvas(modifier = Modifier.fillMaxSize())
+                KuramotoSineWaveCanvas(telemetry = telemetry, modifier = Modifier.fillMaxSize())
             }
 
             // Sync line
@@ -148,17 +155,28 @@ fun TelemetriaTensoresTab(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("SYNC: φ_ext = 0.992", fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = Color(0xFF00E5FF))
+                Text(
+                    "SYNC: φ_ext = ${String.format(java.util.Locale.US, "%.3f", telemetry.kuramotoOrderR)} [R(t)]",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.5.sp,
+                    color = Color(0xFF00E5FF)
+                )
             }
 
             // RAM Allocation Bar
+            val ramPct = ((telemetry.ramAllocatedGb / telemetry.ramTotalGb) * 100).toInt().coerceIn(1, 100)
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("RAM ALLOC Q-POOL", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF5B786D))
-                    Text("8.0/16 GB [50%]", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00E5FF))
+                    Text(
+                        "${String.format(java.util.Locale.US, "%.1f", telemetry.ramAllocatedGb)}/${String.format(java.util.Locale.US, "%.0f", telemetry.ramTotalGb)} GB [$ramPct%]",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 8.sp,
+                        color = Color(0xFF00E5FF)
+                    )
                 }
                 Box(
                     modifier = Modifier
@@ -168,7 +186,7 @@ fun TelemetriaTensoresTab(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.50f)
+                            .fillMaxWidth((telemetry.ramAllocatedGb / telemetry.ramTotalGb).toFloat().coerceIn(0.05f, 1f))
                             .fillMaxHeight()
                             .background(Color(0xFF00E5FF), RoundedCornerShape(3.dp))
                     )
@@ -176,13 +194,19 @@ fun TelemetriaTensoresTab(
             }
 
             // CPU Core Density Bar
+            val cpuLoadVal = telemetry.cpuLoad.coerceIn(5.0f, 100.0f)
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("CPU CORE DENSITY", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF5B786D))
-                    Text("59.1% LOAD", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00E5FF))
+                    Text(
+                        "${String.format(java.util.Locale.US, "%.1f", cpuLoadVal)}% LOAD",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 8.sp,
+                        color = Color(0xFF00E5FF)
+                    )
                 }
                 Box(
                     modifier = Modifier
@@ -192,7 +216,7 @@ fun TelemetriaTensoresTab(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(0.591f)
+                            .fillMaxWidth((cpuLoadVal / 100f).coerceIn(0.05f, 1f))
                             .fillMaxHeight()
                             .background(Color(0xFF00E5FF), RoundedCornerShape(3.dp))
                     )
@@ -359,33 +383,36 @@ private fun MetricCard(
         modifier = modifier
             .background(Color(0xFF03070E), RoundedCornerShape(6.dp))
             .border(1.dp, Color(0xFF103328), RoundedCornerShape(6.dp))
-            .padding(6.dp),
+            .padding(5.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Text(
             text = title,
             fontFamily = FontFamily.Monospace,
-            fontSize = 7.5.sp,
-            color = Color(0xFF5B786D)
+            fontSize = 7.sp,
+            color = Color(0xFF5B786D),
+            maxLines = 1
         )
         Text(
             text = value,
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
-            fontSize = 11.sp,
-            color = Color(0xFF00E5FF)
+            fontSize = 10.5.sp,
+            color = Color(0xFF00E5FF),
+            maxLines = 1
         )
         Box(
             modifier = Modifier
                 .border(0.8.dp, badgeColor, RoundedCornerShape(3.dp))
                 .background(badgeBg, RoundedCornerShape(3.dp))
-                .padding(horizontal = 4.dp, vertical = 1.dp)
+                .padding(horizontal = 3.dp, vertical = 1.dp)
         ) {
             Text(
                 text = badge,
                 fontFamily = FontFamily.Monospace,
                 fontSize = 6.5.sp,
-                color = badgeColor
+                color = badgeColor,
+                maxLines = 1
             )
         }
     }
@@ -434,7 +461,21 @@ private fun BottomActionPill(
 }
 
 @Composable
-private fun KuramotoSineWaveCanvas(modifier: Modifier = Modifier) {
+private fun KuramotoSineWaveCanvas(
+    telemetry: TelemetryState,
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "sine_anim")
+    val phaseAnim by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * PI.toFloat()),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "phaseAnim"
+    )
+
     Canvas(modifier = modifier) {
         val w = size.width
         val h = size.height
@@ -443,18 +484,23 @@ private fun KuramotoSineWaveCanvas(modifier: Modifier = Modifier) {
         // Grid lines
         drawLine(Color(0xFF0A1F16), Offset(0f, midY), Offset(w, midY), strokeWidth = 0.8f)
 
-        // Solid Cyan Sine Wave
+        // Solid Cyan Sine Wave & Magenta Shifted Wave
         val pathCyan = Path()
         val pathMagenta = Path()
+
+        val r = telemetry.kuramotoOrderR.coerceIn(0.1f, 1.2f)
+        val amp1 = h * 0.36f * r
+        val amp2 = h * 0.30f
 
         var first = true
         for (i in 0..100) {
             val x = (i / 100f) * w
-            val angle1 = (i / 100f) * (4 * PI.toFloat())
-            val y1 = midY + sin(angle1) * (h * 0.38f)
+            val normX = i / 100f
+            val angle1 = (normX * 4f * PI.toFloat()) - phaseAnim
+            val y1 = midY + sin(angle1) * amp1
 
-            val angle2 = angle1 + 0.8f
-            val y2 = midY + sin(angle2) * (h * 0.35f)
+            val angle2 = angle1 + 0.93f * (1.5f - r)
+            val y2 = midY + sin(angle2) * amp2
 
             if (first) {
                 pathCyan.moveTo(x, y1)
@@ -473,10 +519,12 @@ private fun KuramotoSineWaveCanvas(modifier: Modifier = Modifier) {
             style = Stroke(width = 1.5f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 4f)))
         )
 
-        // Phase tracker yellow dot
-        val peakX = w * 0.38f
-        val peakY = midY - (h * 0.38f)
-        drawCircle(Color(0xFFFFB300), radius = 4f, center = Offset(peakX, peakY))
+        // Phase tracker yellow dot moving along wave
+        val trackerNormX = ((phaseAnim / (2 * PI.toFloat())) * 0.8f + 0.1f) % 1.0f
+        val trackerX = trackerNormX * w
+        val trackerY = midY + sin((trackerNormX * 4f * PI.toFloat()) - phaseAnim) * amp1
+        drawCircle(Color(0xFFFFB300), radius = 4f, center = Offset(trackerX, trackerY))
+        drawCircle(Color.White, radius = 2f, center = Offset(trackerX, trackerY))
     }
 }
 

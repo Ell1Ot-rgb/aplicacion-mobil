@@ -47,8 +47,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.l13brain.model.HyperEdge
 import com.example.l13brain.model.HyperNode
 import com.example.l13brain.model.ReplLogEntry
+import com.example.l13brain.model.TelemetryState
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -57,6 +59,8 @@ import kotlin.math.sin
 fun ReplCalculatorTab(
     logs: List<ReplLogEntry>,
     nodes: List<HyperNode>,
+    hyperedges: List<HyperEdge> = emptyList(),
+    telemetry: TelemetryState = TelemetryState(),
     selectedNodeId: String?,
     onExecuteCommand: (String) -> Unit,
     onNodeSelected: (String) -> Unit,
@@ -66,7 +70,7 @@ fun ReplCalculatorTab(
 ) {
     var commandInput by remember { mutableStateOf("") }
     var isAnalyzerMinimized by remember { mutableStateOf(false) }
-    var activeSubtabIndex by remember { mutableIntStateOf(0) } // 0: Topología, 1: Kuramoto, 2: Dinámica, 3: Benchmark
+    var activeSubtabIndex by remember { mutableIntStateOf(2) } // 2: Dinámica & Stem Plot por defecto (Screenshot 7)
     var activeMathBottomTab by remember { mutableIntStateOf(0) }
     var selectedNodeName by remember { mutableStateOf(selectedNodeId ?: "s_optico") }
 
@@ -173,6 +177,116 @@ fun ReplCalculatorTab(
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
+            }
+        }
+
+        // 3.5. Interactive Cyber-Calculator Keypad & Quick Sum Toolbar
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF040A12), RoundedCornerShape(6.dp))
+                .border(1.dp, Color(0xFF133829), RoundedCornerShape(6.dp))
+                .padding(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            // Quick Hypergraph & Vector Sum Pills
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                CalcSpecialPill("⚡ H_A ⊕ H_B", Color(0xFF00FF66)) {
+                    onExecuteCommand("sum H_A + H_B")
+                }
+                CalcSpecialPill("⊕ A ⊕ B", Color(0xFF00E5FF)) {
+                    onExecuteCommand("sum --direct")
+                }
+                CalcSpecialPill("🔥 HotSum V3", Color(0xFFFFB300)) {
+                    onExecuteCommand("hotsum")
+                }
+                CalcSpecialPill("Σ E(v)", Color(0xFFFF4081)) {
+                    onExecuteCommand("sum(E)")
+                }
+                CalcSpecialPill("Σ W(e)", Color(0xFF86EFAC)) {
+                    onExecuteCommand("sum(W)")
+                }
+                CalcSpecialPill("Σ d(v)", Color(0xFFB388FF)) {
+                    onExecuteCommand("sum(d)")
+                }
+            }
+
+            // Numeric & Operator Keypad Grid
+            val keyRows = listOf(
+                listOf("7", "8", "9", "/", "C"),
+                listOf("4", "5", "6", "*", "("),
+                listOf("1", "2", "3", "-", ")"),
+                listOf("0", ".", "+", "^", "=")
+            )
+
+            keyRows.forEach { rowKeys ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    rowKeys.forEach { key ->
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(30.dp)
+                                .background(
+                                    when (key) {
+                                        "=" -> Color(0xFF00FF66)
+                                        "C" -> Color(0xFF261014)
+                                        "+", "-", "*", "/", "^" -> Color(0xFF0A2218)
+                                        "(", ")" -> Color(0xFF081B26)
+                                        else -> Color(0xFF061019)
+                                    },
+                                    RoundedCornerShape(4.dp)
+                                )
+                                .border(
+                                    1.dp,
+                                    when (key) {
+                                        "=" -> Color(0xFF00FF66)
+                                        "C" -> Color(0xFFFF4081)
+                                        "+", "-", "*", "/", "^" -> Color(0xFF00E5FF)
+                                        else -> Color(0xFF133829)
+                                    },
+                                    RoundedCornerShape(4.dp)
+                                )
+                                .clickable {
+                                    when (key) {
+                                        "=" -> {
+                                            if (commandInput.isNotBlank()) {
+                                                onExecuteCommand(commandInput)
+                                                commandInput = ""
+                                            }
+                                        }
+                                        "C" -> {
+                                            commandInput = ""
+                                        }
+                                        else -> {
+                                            commandInput += key
+                                        }
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = key,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = when (key) {
+                                    "=" -> Color.Black
+                                    "C" -> Color(0xFFFF4081)
+                                    "+", "-", "*", "/", "^" -> Color(0xFF00E5FF)
+                                    else -> Color(0xFFE2E8F0)
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -392,34 +506,36 @@ fun ReplCalculatorTab(
                 // 4 Sub-Tabs for Analyzer:
                 // 1. TOPOLOGÍA & MATRICES | 2. KURAMOTO S¹ | 3. DINÁMICA & STEM PLOT | 4. BENCHMARK & CONVERGENCIA
                 val analyzerSubtabs = listOf(
-                    Pair("🌀 TOPOLOGÍA &\nMATRICES", Color(0xFF00E5FF)),
+                    Pair("🌀 TOPOLOGÍA & MATRICES", Color(0xFF00E5FF)),
                     Pair("🔄 KURAMOTO S¹", Color(0xFF86EFAC)),
-                    Pair("📈 DINÁMICA &\nSTEM PLOT", Color(0xFF00FF66)),
-                    Pair("⚡ BENCHMARK &\nCONVERGENCIA", Color(0xFFFFB300))
+                    Pair("📈 DINÁMICA & STEM PLOT", Color(0xFF00E5FF)),
+                    Pair("⚡ BENCHMARK & CONVERGENCIA", Color(0xFFFFB300))
                 )
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     analyzerSubtabs.forEachIndexed { index, (label, color) ->
                         val isActive = activeSubtabIndex == index
                         Box(
                             modifier = Modifier
-                                .weight(1f)
-                                .height(32.dp)
+                                .height(28.dp)
                                 .border(1.dp, if (isActive) Color(0xFF00E5FF) else Color(0xFF16382B), RoundedCornerShape(4.dp))
                                 .background(if (isActive) Color(0xFF072430) else Color(0xFF060D15), RoundedCornerShape(4.dp))
                                 .clickable { activeSubtabIndex = index }
-                                .padding(horizontal = 2.dp),
+                                .padding(horizontal = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = label,
                                 fontFamily = FontFamily.Monospace,
-                                fontSize = 7.5.sp,
+                                fontSize = 8.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isActive) Color(0xFF00E5FF) else Color(0xFF4F7363)
+                                color = if (isActive) Color(0xFF00E5FF) else Color(0xFF4F7363),
+                                maxLines = 1
                             )
                         }
                     }
@@ -450,8 +566,17 @@ fun ReplCalculatorTab(
                                     .border(1.dp, Color(0xFF103328), RoundedCornerShape(6.dp))
                             ) {
                                 when (topologyMode) {
-                                    0 -> MiniForceGraphCanvas(modifier = Modifier.fillMaxSize())
-                                    1 -> MiniKonigBipartiteCanvas(modifier = Modifier.fillMaxSize())
+                                    0 -> MiniForceGraphCanvas(
+                                        nodes = nodes,
+                                        hyperedges = hyperedges,
+                                        selectedNodeId = selectedNodeId,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                    1 -> MiniKonigBipartiteCanvas(
+                                        nodes = nodes,
+                                        hyperedges = hyperedges,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
                                     else -> MiniMatlabMatrixView(modifier = Modifier.fillMaxSize())
                                 }
 
@@ -463,7 +588,7 @@ fun ReplCalculatorTab(
                                 ) {
                                     Text(
                                         when (topologyMode) {
-                                            0 -> "H_A ⊕ H_B (Layout Force 2D)"
+                                            0 -> "H_A ⊕ H_B (Layout Force 2D) [${nodes.size} Nodos, ${hyperedges.size} Hiperaristas]"
                                             1 -> "Grafo Bipartito König G_bi(V, E)"
                                             else -> "Indexación MATLAB M(1:3, [1, 3])"
                                         },
@@ -472,7 +597,7 @@ fun ReplCalculatorTab(
                                         color = Color(0xFF00E5FF)
                                     )
                                     Text(
-                                        "⚡ R(t)=0.356 | Foco: v3",
+                                        "⚡ R(t)=${String.format(java.util.Locale.US, "%.3f", telemetry.kuramotoOrderR)} | Foco: ${selectedNodeId ?: nodes.firstOrNull()?.id ?: "none"}",
                                         fontFamily = FontFamily.Monospace,
                                         fontSize = 8.5.sp,
                                         color = Color(0xFFFFB300)
@@ -482,24 +607,61 @@ fun ReplCalculatorTab(
                         }
                     }
                     1 -> {
-                        // Subtab 2: KURAMOTO S¹ (Screenshot 6)
-                        DualKuramotoCirclesCanvas(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(180.dp)
-                                .background(Color(0xFF03070E), RoundedCornerShape(6.dp))
-                                .border(1.dp, Color(0xFF103328), RoundedCornerShape(6.dp))
-                        )
+                        // Subtab 2: KURAMOTO S¹ (Screenshot 6 + Enlace directo a Dinámica)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            DualKuramotoCirclesCanvas(
+                                nodes = nodes,
+                                telemetry = telemetry,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .background(Color(0xFF03070E), RoundedCornerShape(6.dp))
+                                    .border(1.dp, Color(0xFF103328), RoundedCornerShape(6.dp))
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFF071C14), RoundedCornerShape(4.dp))
+                                    .border(0.8.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp))
+                                    .clickable { activeSubtabIndex = 2 }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "📈 VER DINÁMICA CONTINUA & STEM PLOT",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 8.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF00FF66)
+                                )
+                                Text(
+                                    text = "CAMBIAR VISTA ▶",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 8.sp,
+                                    color = Color(0xFF00E5FF)
+                                )
+                            }
+                        }
                     }
                     2 -> {
-                        // Subtab 3: DINÁMICA & STEM PLOT (Screenshot 5)
+                        // Subtab 3: DINÁMICA & STEM PLOT (Screenshot 7)
                         DinamicaStemPlotView(
+                            nodes = nodes,
+                            telemetry = telemetry,
+                            hyperedges = hyperedges,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
                     3 -> {
                         // Subtab 4: BENCHMARK & CONVERGENCIA (Screenshot 4)
                         BenchmarkMerkleBox(
+                            nodes = nodes,
+                            hyperedges = hyperedges,
+                            telemetry = telemetry,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -518,7 +680,7 @@ fun ReplCalculatorTab(
                         "🧮 ÁLGEBRA &\nMATRICES",
                         "⏱️ TIEMPO & MERKLE",
                         "📊 ESPECTRO &\nATRACTOR",
-                        "🕸️ REGLAS WOLFRAM"
+                        "📜 REGLAS WOLFRAM"
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -630,7 +792,35 @@ private fun SmallActionPill(label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun MiniForceGraphCanvas(modifier: Modifier = Modifier) {
+private fun CalcSpecialPill(
+    label: String,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .border(1.dp, color.copy(alpha = 0.8f), RoundedCornerShape(4.dp))
+            .background(color.copy(alpha = 0.12f), RoundedCornerShape(4.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 7.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = label,
+            fontFamily = FontFamily.Monospace,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+    }
+}
+
+@Composable
+private fun MiniForceGraphCanvas(
+    nodes: List<HyperNode>,
+    hyperedges: List<HyperEdge>,
+    selectedNodeId: String?,
+    modifier: Modifier = Modifier
+) {
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
@@ -648,96 +838,321 @@ private fun MiniForceGraphCanvas(modifier: Modifier = Modifier) {
             y += 24f
         }
 
-        // Green Polygon region
-        val path1 = Path().apply {
-            moveTo(width * 0.15f, height * 0.80f)
-            lineTo(width * 0.48f, height * 0.20f)
-            lineTo(width * 0.48f, height * 0.80f)
-            close()
+        // Map node IDs to screen offsets
+        val nodePosMap = mutableMapOf<String, Offset>()
+        val n = nodes.size.coerceAtLeast(1)
+        nodes.forEachIndexed { i, node ->
+            val nx = if (node.x > 0.01f && node.x < 0.99f) {
+                node.x * width
+            } else {
+                val angle = (2.0 * Math.PI * i / n) - Math.PI / 2.0
+                (width * 0.5f + kotlin.math.cos(angle).toFloat() * width * 0.38f)
+            }
+            val ny = if (node.y > 0.01f && node.y < 0.99f) {
+                node.y * height
+            } else {
+                val angle = (2.0 * Math.PI * i / n) - Math.PI / 2.0
+                (height * 0.5f + kotlin.math.sin(angle).toFloat() * height * 0.36f)
+            }
+            nodePosMap[node.id] = Offset(nx.coerceIn(16f, width - 16f), ny.coerceIn(16f, height - 16f))
         }
-        drawPath(path1, Color(0xFF00FF66).copy(alpha = 0.15f))
-        drawPath(path1, Color(0xFF00FF66), style = Stroke(width = 1.5f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 4f))))
 
-        // Magenta Polygon region
-        val path2 = Path().apply {
-            moveTo(width * 0.48f, height * 0.20f)
-            lineTo(width * 0.85f, height * 0.20f)
-            lineTo(width * 0.85f, height * 0.80f)
-            lineTo(width * 0.48f, height * 0.80f)
-            close()
+        // Draw Hyperedges
+        hyperedges.forEach { edge ->
+            val edgeColor = Color(edge.colorHex)
+            val memberPoints = edge.nodeIds.mapNotNull { nodePosMap[it] }
+            if (memberPoints.size >= 2) {
+                val centroidX = memberPoints.map { it.x }.average().toFloat()
+                val centroidY = memberPoints.map { it.y }.average().toFloat()
+                val centroid = Offset(centroidX, centroidY)
+
+                if (memberPoints.size >= 3) {
+                    val path = Path().apply {
+                        moveTo(memberPoints[0].x, memberPoints[0].y)
+                        for (idx in 1 until memberPoints.size) {
+                            lineTo(memberPoints[idx].x, memberPoints[idx].y)
+                        }
+                        close()
+                    }
+                    drawPath(path, edgeColor.copy(alpha = 0.12f))
+                    drawPath(path, edgeColor.copy(alpha = 0.7f), style = Stroke(width = 1.2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 4f))))
+                }
+
+                // Connect nodes to centroid
+                memberPoints.forEach { pt ->
+                    drawLine(
+                        color = edgeColor.copy(alpha = 0.45f),
+                        start = pt,
+                        end = centroid,
+                        strokeWidth = 1f
+                    )
+                }
+
+                // Centroid badge
+                drawCircle(edgeColor, radius = 3.5f, center = centroid)
+                drawCircle(Color.Black, radius = 1.5f, center = centroid)
+            }
         }
-        drawPath(path2, Color(0xFFFF4081).copy(alpha = 0.15f))
-        drawPath(path2, Color(0xFFFF4081), style = Stroke(width = 1.5f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 4f))))
 
-        // Nodes
-        val pts = listOf(
-            Pair(Offset(width * 0.15f, height * 0.80f), Color(0xFF00FF66)),
-            Pair(Offset(width * 0.48f, height * 0.20f), Color(0xFFFFB300)),
-            Pair(Offset(width * 0.48f, height * 0.80f), Color(0xFF00E5FF)),
-            Pair(Offset(width * 0.85f, height * 0.20f), Color(0xFFFF4081)),
-            Pair(Offset(width * 0.85f, height * 0.80f), Color(0xFF00E5FF))
-        )
-        for ((pt, col) in pts) {
-            drawCircle(col, radius = 5f, center = pt)
-            drawCircle(Color.White, radius = 2f, center = pt)
+        // Draw Nodes
+        nodes.forEach { node ->
+            val pos = nodePosMap[node.id] ?: return@forEach
+            val isSelected = node.id == selectedNodeId
+            val nodeColor = when {
+                node.energy > 0.8f -> Color(0xFFFF4081)
+                node.energy > 0.4f -> Color(0xFFFFB300)
+                node.energy > 0.15f -> Color(0xFF00FF66)
+                else -> Color(0xFF00E5FF)
+            }
+            val radius = 4f + (node.energy * 4f).coerceIn(1f, 8f)
+
+            // Outer glow
+            drawCircle(nodeColor.copy(alpha = 0.25f), radius = radius + 6f, center = pos)
+
+            // Selected reticle
+            if (isSelected) {
+                drawCircle(
+                    Color(0xFF00E5FF),
+                    radius = radius + 9f,
+                    center = pos,
+                    style = Stroke(width = 1.5f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(3f, 3f)))
+                )
+            }
+
+            // Core
+            drawCircle(nodeColor, radius = radius, center = pos)
+            drawCircle(Color.White, radius = (radius * 0.4f).coerceAtLeast(1.5f), center = pos)
         }
     }
 }
 
 @Composable
-private fun DualKuramotoCirclesCanvas(modifier: Modifier = Modifier) {
+private fun DualKuramotoCirclesCanvas(
+    nodes: List<HyperNode>,
+    telemetry: TelemetryState,
+    modifier: Modifier = Modifier
+) {
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
 
         val c1x = width * 0.28f
         val c2x = width * 0.72f
-        val cy = height * 0.45f
+        val cy = height * 0.48f
         val radius = height * 0.32f
 
-        // Circle 1: Choque Post-Suma
+        // Circle 1: Fases Nodales en S¹
         drawCircle(Color(0xFF0A2218), radius = radius, center = Offset(c1x, cy), style = Stroke(width = 1f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))))
         drawCircle(Color(0xFF00FF66), radius = 2f, center = Offset(c1x, cy))
 
-        val rays1 = listOf(0.4f, 1.8f, 3.2f, 4.5f)
-        for (r in rays1) {
-            val ex = c1x + cos(r) * radius
-            val ey = cy + sin(r) * radius
-            drawLine(Color(0xFFFF4081), Offset(c1x, cy), Offset(ex, ey), strokeWidth = 1.5f)
-            drawCircle(Color(0xFFFF4081), radius = 3f, center = Offset(ex, ey))
+        nodes.forEach { node ->
+            val ex = c1x + kotlin.math.cos(node.phase.toDouble()).toFloat() * radius
+            val ey = cy + kotlin.math.sin(node.phase.toDouble()).toFloat() * radius
+            val rayColor = when {
+                node.energy > 0.6f -> Color(0xFFFF4081)
+                node.energy > 0.3f -> Color(0xFFFFB300)
+                else -> Color(0xFF00E5FF)
+            }
+            drawLine(rayColor.copy(alpha = 0.75f), Offset(c1x, cy), Offset(ex, ey), strokeWidth = 1.4f)
+            drawCircle(rayColor, radius = 3.5f, center = Offset(ex, ey))
         }
 
-        // Circle 2: Coherencia Dinámica
+        // Circle 2: Parámetro de Orden Kuramoto R(t)
         drawCircle(Color(0xFF0A2218), radius = radius, center = Offset(c2x, cy), style = Stroke(width = 1f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))))
         drawCircle(Color(0xFF00FF66), radius = 2f, center = Offset(c2x, cy))
 
-        val rays2 = listOf(0.8f, 1.2f, 2.7f, 5.1f)
-        for (r in rays2) {
-            val ex = c2x + cos(r) * radius
-            val ey = cy + sin(r) * radius
-            drawLine(Color(0xFF00FF66), Offset(c2x, cy), Offset(ex, ey), strokeWidth = 1.5f)
-            drawCircle(Color(0xFF00FF66), radius = 3f, center = Offset(ex, ey))
-        }
+        val r = telemetry.kuramotoOrderR.coerceIn(0.05f, 1.0f)
+        val meanPhase = (nodes.map { it.phase }.average().toFloat()).takeIf { !it.isNaN() } ?: 0.5f
+        val ox = c2x + kotlin.math.cos(meanPhase.toDouble()).toFloat() * (radius * r)
+        val oy = cy + kotlin.math.sin(meanPhase.toDouble()).toFloat() * (radius * r)
+
+        drawCircle(Color(0xFF00FF66).copy(alpha = (r * 0.3f).coerceIn(0.05f, 0.4f)), radius = radius * r, center = Offset(c2x, cy))
+        drawLine(Color(0xFF00FF66), Offset(c2x, cy), Offset(ox, oy), strokeWidth = 2.2f)
+        drawCircle(Color(0xFF00FF66), radius = 4.5f, center = Offset(ox, oy))
+        drawCircle(Color.White, radius = 2f, center = Offset(ox, oy))
     }
 }
 
 @Composable
-private fun DinamicaStemPlotView(modifier: Modifier = Modifier) {
+private fun DinamicaStemPlotView(
+    nodes: List<HyperNode>,
+    telemetry: TelemetryState,
+    hyperedges: List<HyperEdge>,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // Chart 1: Dinámica Continua
+        // 1. Chart 1: DINÁMICA CONTINUA DE ACTIVACIÓN E_i(t) [TICK 20: SUMA EN CALIENTE]
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF03070E), RoundedCornerShape(4.dp))
                 .border(1.dp, Color(0xFF103328), RoundedCornerShape(4.dp))
-                .padding(6.dp)
+                .padding(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("📈 DINÁMICA CONTINUA DE ACTIVACIÓN E_i(t) [TICK 20: SUMA EN CALIENTE]", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF00E5FF))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    text = "📈 DINÁMICA CONTINUA DE ACTIVACIÓN E_i(t) [TICK 20: SUMA EN CALIENTE]",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 7.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF00E5FF),
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(1.dp)
+                ) {
+                    Text(
+                        text = "— hub_central (E=1.20J)",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 6.5.sp,
+                        color = Color(0xFFFFB300)
+                    )
+                    Text(
+                        text = "— cog_monje (E=1.38J)",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 6.5.sp,
+                        color = Color(0xFF00E5FF)
+                    )
+                    Text(
+                        text = "— s_optico (E=0.74J)",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 6.5.sp,
+                        color = Color(0xFF00FF66)
+                    )
+                }
             }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(95.dp)
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val w = size.width
+                    val h = size.height
+
+                    // Grid
+                    val gridColor = Color(0xFF081E15)
+                    for (i in 1..4) {
+                        val gy = h * (i * 0.2f)
+                        drawLine(gridColor, Offset(0f, gy), Offset(w, gy), strokeWidth = 0.6f)
+                    }
+                    var gx = 25f
+                    while (gx < w) {
+                        drawLine(gridColor, Offset(gx, 0f), Offset(gx, h), strokeWidth = 0.5f)
+                        gx += 35f
+                    }
+
+                    // Tick 20 vertical line (Suma en Caliente boundary)
+                    val xTick = w * 0.42f
+                    drawLine(
+                        color = Color(0xFFFF3366),
+                        start = Offset(xTick, 0f),
+                        end = Offset(xTick, h),
+                        strokeWidth = 1.2f,
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))
+                    )
+
+                    // Curve 1: hub_central (Amber)
+                    val pHub = Path().apply {
+                        moveTo(0f, h * 0.84f)
+                        // Smooth rise up to tick
+                        cubicTo(
+                            xTick * 0.35f, h * 0.83f,
+                            xTick * 0.75f, h * 0.79f,
+                            xTick, h * 0.76f
+                        )
+                        // Vertical jump at tick
+                        lineTo(xTick, h * 0.28f)
+                        // Exponential decay
+                        cubicTo(
+                            xTick + (w - xTick) * 0.25f, h * 0.35f,
+                            xTick + (w - xTick) * 0.65f, h * 0.40f,
+                            w, h * 0.42f
+                        )
+                    }
+                    drawPath(pHub, Color(0xFFFFB300), style = Stroke(width = 1.8f, cap = StrokeCap.Round))
+
+                    // Curve 2: cog_monje (Cyan)
+                    val pCog = Path().apply {
+                        moveTo(0f, h * 0.62f)
+                        cubicTo(
+                            xTick * 0.35f, h * 0.63f,
+                            xTick * 0.75f, h * 0.65f,
+                            xTick, h * 0.66f
+                        )
+                        // Spike jump at tick
+                        lineTo(xTick, h * 0.18f)
+                        // Gentle decay
+                        cubicTo(
+                            xTick + (w - xTick) * 0.28f, h * 0.26f,
+                            xTick + (w - xTick) * 0.70f, h * 0.30f,
+                            w, h * 0.32f
+                        )
+                    }
+                    drawPath(pCog, Color(0xFF00E5FF), style = Stroke(width = 1.8f, cap = StrokeCap.Round))
+
+                    // Curve 3: s_optico (Green)
+                    val pOpt = Path().apply {
+                        moveTo(0f, h * 0.48f)
+                        cubicTo(
+                            xTick * 0.4f, h * 0.51f,
+                            xTick * 0.8f, h * 0.53f,
+                            xTick, h * 0.54f
+                        )
+                        // Subtle step
+                        lineTo(xTick, h * 0.62f)
+                        cubicTo(
+                            xTick + (w - xTick) * 0.4f, h * 0.63f,
+                            xTick + (w - xTick) * 0.8f, h * 0.64f,
+                            w, h * 0.65f
+                        )
+                    }
+                    drawPath(pOpt, Color(0xFF00FF66), style = Stroke(width = 1.8f, cap = StrokeCap.Round))
+                }
+            }
+        }
+
+        // 2. Chart 2: ENTROPÍA H(t) [CIAN] vs PESO HEBBIANO W(e,) [ÁMBAR]
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF03070E), RoundedCornerShape(4.dp))
+                .border(1.dp, Color(0xFF103328), RoundedCornerShape(4.dp))
+                .padding(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "📊 ENTROPÍA H(t) [CIAN] vs PESO HEBBIANO W(e,) [ÁMBAR]",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 7.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF00E5FF)
+                )
+                Text(
+                    text = "Salto: 1.50 -> 2.78 bits",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 7.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF86EFAC)
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -746,101 +1161,103 @@ private fun DinamicaStemPlotView(modifier: Modifier = Modifier) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val w = size.width
                     val h = size.height
-                    // Yellow line
-                    val pY = Path().apply {
-                        moveTo(0f, h * 0.7f)
-                        lineTo(w * 0.45f, h * 0.68f)
-                        lineTo(w * 0.45f, h * 0.30f)
-                        lineTo(w, h * 0.28f)
+                    val xTick = w * 0.42f
+
+                    // Subtle grid
+                    val gridColor = Color(0xFF081E15)
+                    for (i in 1..3) {
+                        val gy = h * (i * 0.25f)
+                        drawLine(gridColor, Offset(0f, gy), Offset(w, gy), strokeWidth = 0.5f)
                     }
-                    drawPath(pY, Color(0xFFFFB300), style = Stroke(width = 1.8f))
 
-                    // Cyan line
-                    val pC = Path().apply {
-                        moveTo(0f, h * 0.45f)
-                        lineTo(w * 0.45f, h * 0.43f)
-                        lineTo(w * 0.45f, h * 0.20f)
-                        lineTo(w, h * 0.35f)
-                    }
-                    drawPath(pC, Color(0xFF00E5FF), style = Stroke(width = 1.8f))
-
-                    // Green line
-                    val pG = Path().apply {
-                        moveTo(0f, h * 0.35f)
-                        lineTo(w * 0.45f, h * 0.48f)
-                        lineTo(w, h * 0.55f)
-                    }
-                    drawPath(pG, Color(0xFF00FF66), style = Stroke(width = 1.8f))
-
-                    // Dashed red event line
-                    drawLine(Color(0xFFFF4081), Offset(w * 0.45f, 0f), Offset(w * 0.45f, h), strokeWidth = 1.2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f)))
-                }
-            }
-        }
-
-        // Chart 2: Entropía vs Peso Hebbiano
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF03070E), RoundedCornerShape(4.dp))
-                .border(1.dp, Color(0xFF103328), RoundedCornerShape(4.dp))
-                .padding(6.dp)
-        ) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("📊 ENTROPÍA H(t) [CIAN] vs PESO HEBBIANO W(e_i) [ÁMBAR]", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF00E5FF))
-                Text("Salto: 1.50 -> 2.78 bits", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFF86EFAC))
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(55.dp)
-            ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val w = size.width
-                    val h = size.height
-                    // Cyan jump line
-                    val p1 = Path().apply {
-                        moveTo(0f, h * 0.75f)
-                        lineTo(w * 0.45f, h * 0.75f)
-                        lineTo(w * 0.45f, h * 0.15f)
+                    // Cyan Solid Step Curve (Entropía Shannon)
+                    val pEntropy = Path().apply {
+                        moveTo(0f, h * 0.76f)
+                        lineTo(xTick, h * 0.76f)
+                        lineTo(xTick, h * 0.24f)
                         lineTo(w, h * 0.25f)
                     }
-                    drawPath(p1, Color(0xFF00E5FF), style = Stroke(width = 1.8f))
+                    drawPath(pEntropy, Color(0xFF00E5FF), style = Stroke(width = 1.8f, cap = StrokeCap.Square))
 
-                    // Amber dashed line
-                    val p2 = Path().apply {
+                    // Amber Dashed Curve (Peso Hebbiano W(e))
+                    val pHebb = Path().apply {
                         moveTo(0f, h * 0.90f)
-                        lineTo(w * 0.45f, h * 0.85f)
-                        lineTo(w, h * 0.50f)
+                        cubicTo(
+                            w * 0.35f, h * 0.80f,
+                            w * 0.70f, h * 0.62f,
+                            w, h * 0.55f
+                        )
                     }
-                    drawPath(p2, Color(0xFFFFB300), style = Stroke(width = 1.5f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))))
+                    drawPath(
+                        pHebb,
+                        Color(0xFFFFB300),
+                        style = Stroke(
+                            width = 1.5f,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))
+                        )
+                    )
                 }
             }
         }
 
-        // Chart 3: Espectro Laplaciano (Stem Plot)
+        // 3. Chart 3: ESPECTRO LAPLACIANO (STEM PLOT: stem(eig(L_H)))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF03070E), RoundedCornerShape(4.dp))
                 .border(1.dp, Color(0xFF103328), RoundedCornerShape(4.dp))
-                .padding(6.dp)
+                .padding(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text("▦ ESPECTRO LAPLACIANO (STEM PLOT: stem(eig(L_H)))", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF00E5FF))
+            Text(
+                text = "▦ ESPECTRO LAPLACIANO (STEM PLOT: stem(eig(L_H)))",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 7.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF00E5FF)
+            )
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .height(75.dp)
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val w = size.width
                     val h = size.height
-                    val stemHeights = listOf(0.12f, 0.22f, 0.40f, 0.65f, 0.78f, 0.92f)
-                    for (i in stemHeights.indices) {
-                        val sx = w * (0.15f + i * 0.14f)
-                        val sy = h * (1f - stemHeights[i])
-                        drawLine(Color(0xFF00FF66).copy(alpha = 0.7f), Offset(sx, h), Offset(sx, sy), strokeWidth = 1.5f)
-                        drawCircle(Color(0xFF00FF66), radius = 3.5f, center = Offset(sx, sy))
+
+                    // Grid
+                    val gridColor = Color(0xFF081E15)
+                    for (i in 1..3) {
+                        val gy = h * (i * 0.25f)
+                        drawLine(gridColor, Offset(0f, gy), Offset(w, gy), strokeWidth = 0.5f)
+                    }
+
+                    // Baseline
+                    val baseY = h * 0.92f
+                    drawLine(Color(0xFF0C2B1D), Offset(0f, baseY), Offset(w, baseY), strokeWidth = 1f)
+
+                    // 6 Eigenvalue Stems sorted ascending
+                    val stemFractions = floatArrayOf(0.15f, 0.30f, 0.45f, 0.60f, 0.75f, 0.90f)
+                    val stemHeights = floatArrayOf(0.14f, 0.22f, 0.36f, 0.54f, 0.72f, 0.90f)
+
+                    for (i in stemFractions.indices) {
+                        val sx = w * stemFractions[i]
+                        val sh = stemHeights[i] * (baseY - 8f)
+                        val sy = baseY - sh
+
+                        // Stem line
+                        drawLine(
+                            color = Color(0xFF00FF66).copy(alpha = 0.85f),
+                            start = Offset(sx, baseY),
+                            end = Offset(sx, sy),
+                            strokeWidth = 1.4f
+                        )
+
+                        // Glowing marker on top
+                        drawCircle(Color(0xFF00FF66).copy(alpha = 0.30f), radius = 5f, center = Offset(sx, sy))
+                        drawCircle(Color(0xFF00FF66), radius = 3.2f, center = Offset(sx, sy))
+                        drawCircle(Color.White, radius = 1.2f, center = Offset(sx, sy))
                     }
                 }
             }
@@ -850,6 +1267,9 @@ private fun DinamicaStemPlotView(modifier: Modifier = Modifier) {
 
 @Composable
 private fun BenchmarkMerkleBox(
+    nodes: List<HyperNode>,
+    hyperedges: List<HyperEdge>,
+    telemetry: TelemetryState,
     modifier: Modifier = Modifier,
     onRunTest: () -> Unit = {}
 ) {
@@ -857,7 +1277,6 @@ private fun BenchmarkMerkleBox(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // Visual Benchmark Bar Comparison (from Benchmark_Sumas_Masivas_3M_10M.png)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -887,7 +1306,6 @@ private fun BenchmarkMerkleBox(
                 )
             }
 
-            // Benchmark Row 1: 3M Operaciones
             BenchmarkComparisonRow(
                 label = "3M OPS (H_A ⊕ H_B):",
                 boxedMs = 115,
@@ -895,7 +1313,6 @@ private fun BenchmarkMerkleBox(
                 speedup = "4.8x"
             )
 
-            // Benchmark Row 2: 10M Operaciones
             BenchmarkComparisonRow(
                 label = "10M OPS (MASSIVE):",
                 boxedMs = 384,
@@ -903,7 +1320,6 @@ private fun BenchmarkMerkleBox(
                 speedup = "4.9x"
             )
 
-            // GC pauses comparison
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -926,10 +1342,10 @@ private fun BenchmarkMerkleBox(
             MerkleRow("• SHA-256 Época Actual:", "bba89ef74c83d8b5 (Inmutable DAG)")
             MerkleRow("• Parent Hash (Génesis):", "fdb942fa4d760c5c (Criptográfico)")
             MerkleRow("• Álgebra de Hipergrafos:", "Suma Amalgamada H_A ⊕ H_B (Monoide)")
-            MerkleRow("• Nodos Unificados:", "6 Nodos (s_optico E=0.05J)")
-            MerkleRow("• Hiperaristas Totales:", "3 Aristas de orden superior")
-            MerkleRow("• Sincronización Kuramoto:", "R(t) = 0.128 (Transición)")
-            MerkleRow("• Entropía de Shannon H(t):", "2.585 bits (Estado Estacionario)")
+            MerkleRow("• Nodos Unificados:", "${nodes.size} Nodos (${nodes.firstOrNull()?.label ?: "s_optico"} E=${String.format(java.util.Locale.US, "%.2f", nodes.firstOrNull()?.energy ?: 0.05f)}J)")
+            MerkleRow("• Hiperaristas Totales:", "${hyperedges.size} Aristas de orden superior")
+            MerkleRow("• Sincronización Kuramoto:", "R(t) = ${String.format(java.util.Locale.US, "%.3f", telemetry.kuramotoOrderR)} (${telemetry.autopoieticStage})")
+            MerkleRow("• Entropía de Shannon H(t):", "${String.format(java.util.Locale.US, "%.3f", telemetry.entropyShannon)} bits")
             MerkleRow("• Optimización Android:", "Zero-Boxing (26.04 M ops/s | 0 ms GC)")
             Text("╚═════════════════════════════════════════════════════╝", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00FF66))
         }
@@ -951,13 +1367,11 @@ private fun BenchmarkComparisonRow(
             Text(label, fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFFE2E8F0))
             Text("Speedup: $speedup", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E5FF))
         }
-        // Dual Bars
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Boxed Bar (Amber)
             Box(
                 modifier = Modifier
                     .weight(boxedMs.toFloat())
@@ -968,7 +1382,6 @@ private fun BenchmarkComparisonRow(
             ) {
                 Text("Std: ${boxedMs}ms", fontFamily = FontFamily.Monospace, fontSize = 6.5.sp, color = Color.White)
             }
-            // Zero-Boxing Bar (Phosphor Green)
             Box(
                 modifier = Modifier
                     .weight(zeroBoxMs.toFloat().coerceAtLeast(15f))
@@ -984,7 +1397,11 @@ private fun BenchmarkComparisonRow(
 }
 
 @Composable
-private fun MiniKonigBipartiteCanvas(modifier: Modifier = Modifier) {
+private fun MiniKonigBipartiteCanvas(
+    nodes: List<HyperNode>,
+    hyperedges: List<HyperEdge>,
+    modifier: Modifier = Modifier
+) {
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
@@ -992,38 +1409,52 @@ private fun MiniKonigBipartiteCanvas(modifier: Modifier = Modifier) {
         val leftX = width * 0.20f
         val rightX = width * 0.80f
 
-        val nodeYs = (0..5).map { (height * 0.15f) + it * (height * 0.14f) }
-        val edgeYs = listOf(height * 0.25f, height * 0.50f, height * 0.75f)
+        val displayNodes = nodes.take(8)
+        val displayEdges = hyperedges.take(6)
 
-        // Bipartite lines
-        val connections = listOf(
-            Pair(0, 0), Pair(1, 0), Pair(2, 0), // e1 connects v1, v2, v3
-            Pair(2, 2), Pair(3, 2), Pair(4, 2), // e3 connects v3, v4, v5
-            Pair(3, 1), Pair(4, 1), Pair(5, 1)  // e2 connects v4, v5, v6
-        )
-
-        for ((vIdx, eIdx) in connections) {
-            drawLine(
-                Color(0xFF00E5FF).copy(alpha = 0.4f),
-                Offset(leftX, nodeYs[vIdx]),
-                Offset(rightX, edgeYs[eIdx]),
-                strokeWidth = 1f,
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))
-            )
+        val nodeYs = displayNodes.mapIndexed { i, _ ->
+            (height * 0.15f) + i * ((height * 0.70f) / (displayNodes.size - 1).coerceAtLeast(1))
+        }
+        val edgeYs = displayEdges.mapIndexed { j, _ ->
+            (height * 0.20f) + j * ((height * 0.60f) / (displayEdges.size - 1).coerceAtLeast(1))
         }
 
-        // Draw left nodes (V)
-        for (i in 0..5) {
-            drawCircle(Color(0xFF00FF66), radius = 6f, center = Offset(leftX, nodeYs[i]))
+        displayNodes.forEachIndexed { vIdx, vNode ->
+            displayEdges.forEachIndexed { eIdx, eEdge ->
+                if (eEdge.nodeIds.contains(vNode.id)) {
+                    val edgeColor = Color(eEdge.colorHex)
+                    drawLine(
+                        edgeColor.copy(alpha = 0.5f),
+                        Offset(leftX, nodeYs[vIdx]),
+                        Offset(rightX, edgeYs[eIdx]),
+                        strokeWidth = 1.2f,
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))
+                    )
+                }
+            }
+        }
+
+        displayNodes.forEachIndexed { i, node ->
+            val nCol = when {
+                node.energy > 0.6f -> Color(0xFFFF4081)
+                node.energy > 0.3f -> Color(0xFFFFB300)
+                else -> Color(0xFF00FF66)
+            }
+            drawCircle(nCol, radius = 5.5f, center = Offset(leftX, nodeYs[i]))
             drawCircle(Color.Black, radius = 2f, center = Offset(leftX, nodeYs[i]))
         }
 
-        // Draw right nodes (E)
-        for (j in 0..2) {
+        displayEdges.forEachIndexed { j, edge ->
+            val eCol = Color(edge.colorHex)
             drawRect(
-                Color(0xFFFF4081),
-                topLeft = Offset(rightX - 7f, edgeYs[j] - 7f),
-                size = Size(14f, 14f)
+                eCol,
+                topLeft = Offset(rightX - 6f, edgeYs[j] - 6f),
+                size = Size(12f, 12f)
+            )
+            drawRect(
+                Color.Black,
+                topLeft = Offset(rightX - 2f, edgeYs[j] - 2f),
+                size = Size(4f, 4f)
             )
         }
     }

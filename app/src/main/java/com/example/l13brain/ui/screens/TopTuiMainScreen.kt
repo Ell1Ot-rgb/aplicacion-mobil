@@ -98,6 +98,8 @@ fun TopTuiMainScreen(
                     ReplCalculatorTab(
                         logs = state.replLogs,
                         nodes = state.nodes,
+                        hyperedges = state.hyperedges,
+                        telemetry = state.telemetry,
                         selectedNodeId = state.selectedNodeId,
                         onExecuteCommand = { cmd -> topTuiViewModel.executeReplCommand(cmd) },
                         onNodeSelected = { id -> topTuiViewModel.selectNode(id) },

@@ -135,7 +135,7 @@ fun TopHeader(
         // 2. Tab Navigation Bar (4 Tabs matching screenshots)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             HeaderTabItem(
@@ -153,18 +153,17 @@ fun TopHeader(
             )
 
             HeaderTabItem(
-                title = "📊 TELEMETRÍA\n& TENSORES",
+                title = "📊 TELEMETRÍA",
                 isSelected = selectedTab == 2,
                 onClick = { onTabSelected(2) },
-                isTwoLines = true,
-                modifier = Modifier.weight(1.3f)
+                modifier = Modifier.weight(1f)
             )
 
             HeaderTabItem(
                 title = "⚙️ AJUSTES",
                 isSelected = selectedTab == 3,
                 onClick = { onTabSelected(3) },
-                modifier = Modifier.weight(1.1f)
+                modifier = Modifier.weight(1f)
             )
         }
 
@@ -176,7 +175,7 @@ fun TopHeader(
                 .fillMaxWidth()
                 .background(Color(0xFF02050A), RoundedCornerShape(4.dp))
                 .border(0.8.dp, Color(0xFF0C2418), RoundedCornerShape(4.dp))
-                .padding(horizontal = 6.dp, vertical = 2.5.dp),
+                .padding(horizontal = 6.dp, vertical = 3.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -214,8 +213,7 @@ private fun HeaderTabItem(
     title: String,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    isTwoLines: Boolean = false
+    modifier: Modifier = Modifier
 ) {
     val borderColor = if (isSelected) Color(0xFF00FF66) else Color(0xFF143022)
     val backgroundColor = if (isSelected) Color(0xFF072618) else Color(0xFF070E17)
@@ -223,21 +221,21 @@ private fun HeaderTabItem(
 
     Box(
         modifier = modifier
-            .height(36.dp)
+            .height(32.dp)
             .border(if (isSelected) 1.5.dp else 1.dp, borderColor, RoundedCornerShape(6.dp))
             .background(backgroundColor, RoundedCornerShape(6.dp))
             .clickable { onClick() }
-            .padding(horizontal = 4.dp, vertical = 2.dp),
+            .padding(horizontal = 2.dp, vertical = 2.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = title,
             fontFamily = FontFamily.Monospace,
-            fontSize = if (isTwoLines) 9.sp else 10.sp,
+            fontSize = 9.5.sp,
             fontWeight = FontWeight.Bold,
             color = textColor,
             textAlign = TextAlign.Center,
-            lineHeight = 11.sp
+            maxLines = 1
         )
     }
 }

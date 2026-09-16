@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -81,28 +82,39 @@ fun ToposcopioGrafoTab(
             .padding(top = 2.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 1. Frame Header: "┌─ TOPOSCOPIO DINÁMICO L13 // DOMINIO MIXTO TOPOLÓGICO"
+        // 1. Frame Header: "┌─ TOPOSCOPIO L13 // DOMINIO MIXTO" + MERKLE Badge
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "┌─ TOPOSCOPIO DINÁMICO L13 // DOMINIO MIXTO TOPOLÓGICO",
+                text = "┌─ TOPOSCOPIO L13 // DOMINIO MIXTO",
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
-                fontSize = 11.sp,
+                fontSize = 10.sp,
                 color = Color(0xFF00FF66),
-                modifier = Modifier.weight(1f, fill = false)
+                maxLines = 1,
+                modifier = Modifier.weight(1f)
             )
 
-            Text(
-                text = "MERKLE:\n[12a901a3..]",
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                fontSize = 9.sp,
-                color = Color(0xFFFFB300)
-            )
+            Spacer(modifier = Modifier.width(6.dp))
+
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFF071A12), RoundedCornerShape(4.dp))
+                    .border(0.8.dp, Color(0xFFFFB300), RoundedCornerShape(4.dp))
+                    .padding(horizontal = 5.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "MERKLE: [${telemetry.stateHash.take(8)}..]",
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 8.5.sp,
+                    color = Color(0xFFFFB300),
+                    maxLines = 1
+                )
+            }
         }
 
         // 2. Main Hypergraph Canvas Card (Convex Euler Ellipses & Bridge)
@@ -184,21 +196,21 @@ fun ToposcopioGrafoTab(
                         color = Color(0xFF00FF66)
                     )
 
-                    BadgePill(text = "CH1: ${selectedNodeId ?: "s_optico"}", color = Color(0xFFFFB300), bg = Color(0xFF241505))
-                    BadgePill(text = "CH2: hub_central", color = Color(0xFF00E5FF), bg = Color(0xFF051C24))
+                    BadgePill(text = "CH1: s_optico", color = Color(0xFFFFB300), bg = Color(0xFF241505))
+                    BadgePill(text = "CH2: s_optico", color = Color(0xFF00E5FF), bg = Color(0xFF051C24))
                     BadgePill(text = "DC", color = Color(0xFF00FF66), bg = Color(0xFF061A12))
                 }
 
                 BadgePill(text = "TRIG: AUTO ●", color = Color(0xFF00FF66), bg = Color(0xFF061A12))
             }
 
-            // Filter Subtabs: 1. MORFOLOGÍ | 2. DIRAC & ( | 3. GFT WATER | 4. TRIGGER C | 5. MEMORIA M | 6. DENSIDAD
+            // Filter Subtabs: 1. MORFOLOGÍA | 2. DIRAC S¹ | 3. GFT WATERFALL | 4. TRIGGER CAUSAL | 5. MEMORIA VSA | 6. DENSIDAD
             val subtabs = listOf(
-                "1. MORFOLOGÍ",
-                "2. DIRAC & (",
-                "3. GFT WATER",
-                "4. TRIGGER C",
-                "5. MEMORIA M",
+                "1. MORFOLOGÍA",
+                "2. DIRAC S¹",
+                "3. GFT WATERFALL",
+                "4. TRIGGER CAUSAL",
+                "5. MEMORIA VSA",
                 "6. DENSIDAD"
             )
 
@@ -273,23 +285,41 @@ fun ToposcopioGrafoTab(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "[TOPOLOGÍA: k=3..4] [ARISTAS: 3] [CONV: 38.9%] [VIEW: EULER HULL]",
+                text = "[TOPOLOGÍA: k=3..4]",
                 fontFamily = FontFamily.Monospace,
-                fontSize = 9.sp,
+                fontSize = 8.5.sp,
                 color = Color(0xFF00FF66)
             )
-
+            Text(
+                text = "[ARISTAS: ${hyperedges.size}]",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.5.sp,
+                color = Color(0xFF00FF66)
+            )
+            Text(
+                text = "[CONV: ${String.format(java.util.Locale.US, "%.1f", telemetry.convergencePct)}%]",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.5.sp,
+                color = Color(0xFF00FF66)
+            )
+            Text(
+                text = "[VIEW: EULER HULL]",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.5.sp,
+                color = Color(0xFF00FF66)
+            )
             Text(
                 text = "[ZOOM: 100%]",
                 fontFamily = FontFamily.Monospace,
-                fontSize = 9.sp,
+                fontSize = 8.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF00FF66)
+                color = Color(0xFF00E5FF)
             )
         }
     }
@@ -407,18 +437,14 @@ fun HypergraphCanvas(
 }
 
 private fun DrawScope.drawDensityHeatmap(width: Float, height: Float, nodes: List<HyperNode>) {
-    val nodePositions = if (nodes.isNotEmpty()) {
-        nodes.map { Offset(it.x * width, it.y * height) }
-    } else {
-        listOf(
-            Offset(width * 0.12f, height * 0.27f),
-            Offset(width * 0.11f, height * 0.70f),
-            Offset(width * 0.48f, height * 0.27f),
-            Offset(width * 0.88f, height * 0.27f),
-            Offset(width * 0.50f, height * 0.71f),
-            Offset(width * 0.88f, height * 0.71f)
-        )
-    }
+    val nodePositions = listOf(
+        Offset(width * 0.12f, height * 0.27f),
+        Offset(width * 0.11f, height * 0.70f),
+        Offset(width * 0.48f, height * 0.27f),
+        Offset(width * 0.88f, height * 0.27f),
+        Offset(width * 0.50f, height * 0.71f),
+        Offset(width * 0.88f, height * 0.71f)
+    )
     for (pt in nodePositions) {
         drawCircle(
             brush = Brush.radialGradient(
@@ -456,105 +482,97 @@ private fun DrawScope.drawEulerHypergraph(
 ) {
     val nodeMap = nodes.associateBy { it.id }
 
-    // Positions for member nodes
-    val pOptico = nodeMap["v1"]?.let { Offset(it.x * width, it.y * height) } ?: Offset(width * 0.12f, height * 0.27f)
-    val pAcustico = nodeMap["v2"]?.let { Offset(it.x * width, it.y * height) } ?: Offset(width * 0.11f, height * 0.70f)
-    val pHub = nodeMap["v3"]?.let { Offset(it.x * width, it.y * height) } ?: Offset(width * 0.48f, height * 0.27f)
-    val pMonje = nodeMap["v4"]?.let { Offset(it.x * width, it.y * height) } ?: Offset(width * 0.88f, height * 0.27f)
-    val pMemoria = nodeMap["v5"]?.let { Offset(it.x * width, it.y * height) } ?: Offset(width * 0.50f, height * 0.71f)
-    val pS4 = nodeMap["v6"]?.let { Offset(it.x * width, it.y * height) } ?: Offset(width * 0.88f, height * 0.71f)
-
-    // Ellipse 1: Green Sensorial (e1_sensorial, k=3, DPO L=89%)
-    drawOval(
-        color = Color(0xFF00FF66).copy(alpha = 0.08f),
-        topLeft = Offset(width * 0.06f, height * 0.15f),
-        size = Size(width * 0.38f, height * 0.68f)
-    )
-    drawOval(
-        color = Color(0xFF00FF66).copy(alpha = 0.85f),
-        topLeft = Offset(width * 0.06f, height * 0.15f),
-        size = Size(width * 0.38f, height * 0.68f),
-        style = Stroke(width = 2.4f)
-    )
-
-    // Tag e1_sensorial
-    drawTagBox(
-        text = "e1_sensorial (k=3) • DPO L=89%",
-        center = Offset(width * 0.24f, height * 0.40f),
-        textColor = Color(0xFF00FF66),
-        borderColor = Color(0xFF00FF66),
-        bgColor = Color(0xFF04180E)
-    )
-
-    // Ellipse 2: Magenta Cognitiva (e2_cognitiva_s4, k=4, DPO L=89%)
-    drawOval(
-        color = Color(0xFFFF4081).copy(alpha = 0.08f),
-        topLeft = Offset(width * 0.48f, height * 0.14f),
-        size = Size(width * 0.44f, height * 0.72f)
-    )
-    drawOval(
-        color = Color(0xFFFF4081).copy(alpha = 0.85f),
-        topLeft = Offset(width * 0.48f, height * 0.14f),
-        size = Size(width * 0.44f, height * 0.72f),
-        style = Stroke(width = 2.4f)
-    )
-
-    // Tag e2_cognitiva_s4
-    drawTagBox(
-        text = "e2_cognitiva_s4 (k=4) • DPO L=89%",
-        center = Offset(width * 0.70f, height * 0.48f),
-        textColor = Color(0xFFFF4081),
-        borderColor = Color(0xFFFF4081),
-        bgColor = Color(0xFF1E0510)
-    )
-
-    // Laser lines from ellipse center to member nodes
-    // For e1 (Green)
-    val e1Nodes = listOf(pOptico, pAcustico, pHub)
-    for (pt in e1Nodes) {
-        drawLine(
-            color = Color(0xFF00FF66).copy(alpha = 0.5f),
-            start = Offset(width * 0.24f, height * 0.40f),
-            end = pt,
-            strokeWidth = 1.2f
+    if (hyperedges.isEmpty() || nodes.isEmpty()) {
+        // Fallback default visualization if lists are empty
+        drawOval(
+            color = Color(0xFF00FF66).copy(alpha = 0.08f),
+            topLeft = Offset(width * 0.06f, height * 0.15f),
+            size = Size(width * 0.38f, height * 0.68f)
         )
+        drawOval(
+            color = Color(0xFF00FF66).copy(alpha = 0.85f),
+            topLeft = Offset(width * 0.06f, height * 0.15f),
+            size = Size(width * 0.38f, height * 0.68f),
+            style = Stroke(width = 2.4f)
+        )
+        drawTagBox(
+            text = "e1_sensorial (k=3) • DPO L=89%",
+            center = Offset(width * 0.24f, height * 0.40f),
+            textColor = Color(0xFF00FF66),
+            borderColor = Color(0xFF00FF66),
+            bgColor = Color(0xFF04180E)
+        )
+        return
     }
 
-    // For e2 (Pink)
-    val e2Nodes = listOf(pHub, pMonje, pMemoria, pS4)
-    for (pt in e2Nodes) {
-        drawLine(
-            color = Color(0xFFFF4081).copy(alpha = 0.5f),
-            start = Offset(width * 0.70f, height * 0.48f),
-            end = pt,
-            strokeWidth = 1.2f
+    // Dynamic rendering of all active hyperedges
+    for (edge in hyperedges) {
+        val memberNodes = edge.nodeIds.mapNotNull { nodeMap[it] }
+        if (memberNodes.isEmpty()) continue
+
+        val memberPoints = memberNodes.map { node ->
+            Offset(
+                node.x.coerceIn(0.08f, 0.92f) * width,
+                node.y.coerceIn(0.12f, 0.88f) * height
+            )
+        }
+
+        val edgeColor = Color(edge.colorHex.toInt())
+        val avgX = memberPoints.map { it.x }.average().toFloat()
+        val avgY = memberPoints.map { it.y }.average().toFloat()
+        val centroid = Offset(avgX, avgY)
+
+        val minX = memberPoints.minOf { it.x }
+        val maxX = memberPoints.maxOf { it.x }
+        val minY = memberPoints.minOf { it.y }
+        val maxY = memberPoints.maxOf { it.y }
+
+        val padX = 42f
+        val padY = 34f
+        val boxLeft = (minX - padX).coerceAtLeast(8f)
+        val boxTop = (minY - padY).coerceAtLeast(8f)
+        val boxWidth = ((maxX - minX) + padX * 2f).coerceAtMost(width - boxLeft - 8f)
+        val boxHeight = ((maxY - minY) + padY * 2f).coerceAtMost(height - boxTop - 8f)
+
+        // Draw bounding polyadic envelope / ellipse
+        val glowAlpha = (0.07f * edge.phosphorLuminance * (0.8f + pulseAlpha * 0.4f)).coerceIn(0.04f, 0.22f)
+        drawOval(
+            color = edgeColor.copy(alpha = glowAlpha),
+            topLeft = Offset(boxLeft, boxTop),
+            size = Size(boxWidth, boxHeight)
+        )
+        drawOval(
+            color = edgeColor.copy(alpha = (0.75f * edge.phosphorLuminance).coerceIn(0.4f, 0.95f)),
+            topLeft = Offset(boxLeft, boxTop),
+            size = Size(boxWidth, boxHeight),
+            style = Stroke(width = (2.0f * edge.afterglowTrailRadius).coerceIn(1.5f, 3.5f))
+        )
+
+        // Laser lines from centroid to all member vertices
+        for (pt in memberPoints) {
+            drawLine(
+                color = edgeColor.copy(alpha = 0.45f * edge.phosphorLuminance),
+                start = centroid,
+                end = pt,
+                strokeWidth = 1.2f
+            )
+        }
+
+        // Draw Tag Box at centroid
+        val dpoPct = (edge.phosphorLuminance * 100).toInt()
+        val tagText = "${edge.label} (k=${edge.nodeIds.size}) • W=${String.format(java.util.Locale.US, "%.2f", edge.weight)}"
+        val tagCenter = Offset(
+            centroid.x.coerceIn(80f, width - 80f),
+            (centroid.y - 18f).coerceIn(24f, height - 24f)
+        )
+        drawTagBox(
+            text = tagText,
+            center = tagCenter,
+            textColor = edgeColor,
+            borderColor = edgeColor,
+            bgColor = Color(0xFF030A12)
         )
     }
-
-    // Bridge Hyperedge e3_puente (Cyan Line across top nodes)
-    drawLine(
-        color = Color(0xFF00E5FF).copy(alpha = 0.4f),
-        start = pOptico,
-        end = pMonje,
-        strokeWidth = 8f,
-        cap = StrokeCap.Round
-    )
-    drawLine(
-        color = Color(0xFF00E5FF),
-        start = pOptico,
-        end = pMonje,
-        strokeWidth = 2.5f,
-        cap = StrokeCap.Round
-    )
-
-    // Tag e3_puente
-    drawTagBox(
-        text = "e3_puente (k=3) • DPO L=89%",
-        center = Offset(width * 0.48f, height * 0.26f),
-        textColor = Color(0xFF00E5FF),
-        borderColor = Color(0xFF00E5FF),
-        bgColor = Color(0xFF051C24)
-    )
 }
 
 private fun DrawScope.drawTagBox(
@@ -565,7 +583,7 @@ private fun DrawScope.drawTagBox(
     bgColor: Color
 ) {
     val paint = android.graphics.Paint().apply {
-        color = textColor.hashCode()
+        color = textColor.toArgb()
         textSize = 18f
         isAntiAlias = true
         typeface = android.graphics.Typeface.MONOSPACE
@@ -603,6 +621,45 @@ private fun DrawScope.drawTopNodes(
     selectedNodeId: String?,
     pulseAlpha: Float
 ) {
+    val displayNodes = if (nodes.isNotEmpty()) {
+        nodes.map { node ->
+            val cx = node.x.coerceIn(0.08f, 0.92f) * width
+            val cy = node.y.coerceIn(0.12f, 0.88f) * height
+            val isHub = node.id.contains("hub", ignoreCase = true) || node.label.contains("hub", ignoreCase = true) || node.label.contains("monje", ignoreCase = true)
+            val isSensory = node.modalState.contains("Sensorial", ignoreCase = true) || node.id.startsWith("s_")
+            val isS4 = node.modalState.contains("S4", ignoreCase = true) || node.id.contains("s4", ignoreCase = true)
+            val isMemory = node.id.contains("memoria", ignoreCase = true)
+
+            val color = when {
+                isSensory -> Color(0xFF00FF66)
+                isS4 -> Color(0xFFFF4081)
+                isMemory -> Color(0xFF00E5FF)
+                isHub -> Color(0xFFFFB300)
+                else -> Color(0xFF00E5FF)
+            }
+
+            val star = if (isHub) " ★" else ""
+            val label = "${node.label} [${String.format(java.util.Locale.US, "%.2f", node.energy)} J]$star"
+            NodeVisual(
+                id = node.id,
+                label = label,
+                pos = Offset(cx, cy),
+                color = color,
+                isStar = isHub,
+                isSelected = (node.id == selectedNodeId)
+            )
+        }
+    } else {
+        listOf(
+            NodeVisual("v1", "s_optico [0.19 J]", Offset(width * 0.12f, height * 0.27f), Color(0xFF00FF66), false, false),
+            NodeVisual("v2", "s_acustico [0.19 J]", Offset(width * 0.11f, height * 0.70f), Color(0xFF00FF66), false, false),
+            NodeVisual("v3", "HUB_CENTRAL [0.19 J] ★", Offset(width * 0.48f, height * 0.27f), Color(0xFFFFB300), true, selectedNodeId == "v3" || selectedNodeId == "hub_central"),
+            NodeVisual("v4", "COG_MONJE [0.19 J] ★", Offset(width * 0.88f, height * 0.27f), Color(0xFFFFB300), true, false),
+            NodeVisual("v5", "cog_memoria [0.19 J]", Offset(width * 0.50f, height * 0.71f), Color(0xFF00E5FF), false, false),
+            NodeVisual("v6", "cog_s4 [0.19 J]", Offset(width * 0.88f, height * 0.71f), Color(0xFFFF4081), false, false)
+        )
+    }
+
     val labelPaint = android.graphics.Paint().apply {
         color = android.graphics.Color.WHITE
         textSize = 17f
@@ -611,56 +668,24 @@ private fun DrawScope.drawTopNodes(
         textAlign = android.graphics.Paint.Align.CENTER
     }
 
-    val displayNodes = if (nodes.isNotEmpty()) {
-        nodes.map { node ->
-            val color = when {
-                node.modalState.contains("Sensorial", ignoreCase = true) -> Color(0xFF00FF66)
-                node.modalState.contains("Cognitivo", ignoreCase = true) -> Color(0xFFFFB300)
-                node.modalState.contains("Motor", ignoreCase = true) -> Color(0xFF00E5FF)
-                node.modalState.contains("Memoria", ignoreCase = true) -> Color(0xFFFF4081)
-                else -> Color(0xFF00FF66)
-            }
-            val isStar = node.id == "v3" || node.id == "v4" || node.label.contains("hub", ignoreCase = true)
-            val starSuffix = if (isStar) " ★" else ""
-            val energyStr = String.format(java.util.Locale.US, "%.2f", node.energy)
-            val label = "${node.label} [${energyStr} J]$starSuffix"
-            NodeVisual(
-                id = node.id,
-                label = label,
-                pos = Offset(node.x * width, node.y * height),
-                color = color,
-                isStar = isStar,
-                isSelected = node.id == selectedNodeId
-            )
-        }
-    } else {
-        listOf(
-            NodeVisual("v1", "s_optico [0.19 J]", Offset(width * 0.12f, height * 0.27f), Color(0xFF00FF66), false, false),
-            NodeVisual("v2", "s_acustico [0.19 J]", Offset(width * 0.11f, height * 0.70f), Color(0xFF00FF66), false, false),
-            NodeVisual("v3", "HUB_CENTRAL [0.19 J] ★", Offset(width * 0.48f, height * 0.27f), Color(0xFFFFB300), true, selectedNodeId == "v3"),
-            NodeVisual("v4", "COG_MONJE [0.19 J] ★", Offset(width * 0.88f, height * 0.27f), Color(0xFFFFB300), true, selectedNodeId == "v4"),
-            NodeVisual("v5", "cog_memoria [0.19 J]", Offset(width * 0.50f, height * 0.71f), Color(0xFF00E5FF), false, selectedNodeId == "v5"),
-            NodeVisual("v6", "cog_s4 [0.19 J]", Offset(width * 0.88f, height * 0.71f), Color(0xFFFF4081), false, selectedNodeId == "v6")
-        )
-    }
-
     for (node in displayNodes) {
         val cx = node.pos.x
         val cy = node.pos.y
 
-        // Selection highlight ring & radar halo
+        // Reticle for selected node
         if (node.isSelected) {
+            val reticleRadius = 24f + pulseAlpha * 6f
             drawCircle(
-                color = Color(0xFF00E5FF).copy(alpha = 0.35f + pulseAlpha * 0.25f),
-                radius = 24f,
-                center = Offset(cx, cy)
-            )
-            drawCircle(
-                color = Color(0xFF00E5FF),
-                radius = 20f,
+                color = Color(0xFFFFB300).copy(alpha = 0.8f),
+                radius = reticleRadius,
                 center = Offset(cx, cy),
-                style = Stroke(width = 1.5f)
+                style = Stroke(width = 1.6f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f)))
             )
+            // Crosshairs
+            drawLine(Color(0xFFFFB300), Offset(cx - reticleRadius - 4f, cy), Offset(cx - reticleRadius + 4f, cy), strokeWidth = 1.5f)
+            drawLine(Color(0xFFFFB300), Offset(cx + reticleRadius - 4f, cy), Offset(cx + reticleRadius + 4f, cy), strokeWidth = 1.5f)
+            drawLine(Color(0xFFFFB300), Offset(cx, cy - reticleRadius - 4f), Offset(cx, cy - reticleRadius + 4f), strokeWidth = 1.5f)
+            drawLine(Color(0xFFFFB300), Offset(cx, cy + reticleRadius - 4f), Offset(cx, cy + reticleRadius + 4f), strokeWidth = 1.5f)
         }
 
         // Halo
@@ -688,8 +713,9 @@ private fun DrawScope.drawTopNodes(
             center = Offset(cx, cy)
         )
 
-        // Label box beneath node
-        val tagY = cy + 18f
+        // Label box beneath or above node
+        val isBottomNode = cy > height * 0.72f
+        val tagY = if (isBottomNode) cy - 22f else cy + 20f
 
         val textWidth = labelPaint.measureText(node.label)
         val boxWidth = textWidth + 12f
@@ -701,13 +727,13 @@ private fun DrawScope.drawTopNodes(
             size = Size(boxWidth, boxHeight)
         )
         drawRect(
-            color = if (node.isSelected) Color(0xFF00E5FF) else node.color.copy(alpha = 0.6f),
+            color = node.color.copy(alpha = 0.6f),
             topLeft = Offset(cx - boxWidth / 2f, tagY - boxHeight / 2f),
             size = Size(boxWidth, boxHeight),
-            style = Stroke(width = if (node.isSelected) 1.5f else 0.8f)
+            style = Stroke(width = 0.8f)
         )
 
-        labelPaint.color = if (node.isSelected) android.graphics.Color.WHITE else node.color.hashCode()
+        labelPaint.color = node.color.toArgb()
         drawContext.canvas.nativeCanvas.drawText(
             node.label,
             cx,
@@ -718,12 +744,12 @@ private fun DrawScope.drawTopNodes(
 }
 
 private data class NodeVisual(
-    val id: String = "",
+    val id: String,
     val label: String,
     val pos: Offset,
     val color: Color,
     val isStar: Boolean,
-    val isSelected: Boolean = false
+    val isSelected: Boolean
 )
 
 @Composable
@@ -732,6 +758,17 @@ fun DiracPolarRadarCanvas(
     telemetry: TelemetryState,
     modifier: Modifier = Modifier
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "radar_anim")
+    val sweepAngle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2800, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "sweepAngle"
+    )
+
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
@@ -749,29 +786,48 @@ fun DiracPolarRadarCanvas(
         drawCircle(gridColor, radius = maxRadius * 0.75f, center = Offset(cx, cy), style = Stroke(width = 0.8f))
         drawCircle(gridColor, radius = maxRadius, center = Offset(cx, cy), style = Stroke(width = 1f))
 
-        // Phase vectors
-        val rays = listOf(
-            Pair(Color(0xFFFFB300), 0.35f), // Yellow
-            Pair(Color(0xFF00FF66), 1.15f), // Green
-            Pair(Color(0xFF00E5FF), 2.10f), // Cyan
-            Pair(Color(0xFFFF4081), 3.80f), // Magenta
-            Pair(Color(0xFF00E5FF), 4.70f)  // Cyan 2
+        // Rotating radar sweep line
+        val sweepX = cx + cos(sweepAngle) * maxRadius
+        val sweepY = cy + sin(sweepAngle) * maxRadius
+        drawLine(
+            color = Color(0xFF00FF66).copy(alpha = 0.7f),
+            start = Offset(cx, cy),
+            end = Offset(sweepX, sweepY),
+            strokeWidth = 1.8f
         )
 
-        for ((color, angle) in rays) {
-            val ex = cx + cos(angle) * maxRadius * 0.85f
-            val ey = cy + sin(angle) * maxRadius * 0.85f
+        // Phase vectors for actual nodes
+        val activeNodes = if (nodes.isNotEmpty()) nodes.take(8) else listOf(
+            HyperNode("v1", "s_optico", 1.1f, 0f, 0f, phase = 0.35f),
+            HyperNode("v2", "s_acustico", 0.9f, 0f, 0f, phase = 1.15f),
+            HyperNode("v3", "hub", 1.2f, 0f, 0f, phase = 2.10f),
+            HyperNode("v4", "monje", 1.4f, 0f, 0f, phase = 3.80f),
+            HyperNode("v5", "s4", 0.8f, 0f, 0f, phase = 4.70f)
+        )
+
+        for (node in activeNodes) {
+            val nodeAngle = node.phase
+            val rLen = maxRadius * (0.50f + (node.energy / 3.0f).coerceIn(0.1f, 0.45f))
+            val ex = cx + cos(nodeAngle) * rLen
+            val ey = cy + sin(nodeAngle) * rLen
+
+            val vecColor = when {
+                node.modalState.contains("Sensorial") || node.label.startsWith("s_") -> Color(0xFF00FF66)
+                node.modalState.contains("S4") -> Color(0xFFFF4081)
+                node.label.contains("hub") || node.label.contains("monje") -> Color(0xFFFFB300)
+                else -> Color(0xFF00E5FF)
+            }
 
             drawLine(
-                color = color.copy(alpha = 0.85f),
+                color = vecColor.copy(alpha = 0.85f),
                 start = Offset(cx, cy),
                 end = Offset(ex, ey),
                 strokeWidth = 2f,
                 cap = StrokeCap.Round
             )
             drawCircle(
-                color = color,
-                radius = 3f,
+                color = vecColor,
+                radius = 3.5f,
                 center = Offset(ex, ey)
             )
         }
@@ -786,6 +842,17 @@ fun DualChannelOscilloscopeCanvas(
     telemetry: TelemetryState,
     modifier: Modifier = Modifier
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "oscilloscope_anim")
+    val phaseAnim by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "phaseAnim"
+    )
+
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
@@ -805,18 +872,19 @@ fun DualChannelOscilloscopeCanvas(
         drawLine(Color(0xFF0F3A27), Offset(0f, cy), Offset(width, cy), strokeWidth = 1f)
         drawLine(Color(0xFF0F3A27), Offset(width / 2f, 0f), Offset(width / 2f, height), strokeWidth = 1f)
 
-        // CH1: Amber Wave (s_optico)
+        // CH1: Amber Wave & CH2: Cyan Wave
         val pathCh1 = Path()
         val pathCh2 = Path()
         val points = 80
         val omega = 4.0 * Math.PI
-        val phase1 = (System.currentTimeMillis() % 3000) / 3000.0 * 2.0 * Math.PI
-        val phase2 = phase1 + 0.93 // ~53.3 degrees shift
+        val rFactor = telemetry.kuramotoOrderR.coerceIn(0.2f, 1.2f)
+        val phase1 = phaseAnim
+        val phase2 = phaseAnim + (0.93 * (2.0 - rFactor))
 
         for (i in 0..points) {
             val x = (width / points) * i
             val normX = i.toFloat() / points
-            val y1 = cy + (sin(normX * omega + phase1) * (height * 0.32f)).toFloat()
+            val y1 = cy + (sin(normX * omega + phase1) * (height * 0.32f * rFactor)).toFloat()
             val y2 = cy + (sin(normX * omega + phase2) * (height * 0.28f)).toFloat()
 
             if (i == 0) {
@@ -848,6 +916,17 @@ fun OscilloscopeLissajousCanvas(
     telemetry: TelemetryState,
     modifier: Modifier = Modifier
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "lissajous_anim")
+    val deltaAnim by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(3200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "deltaAnim"
+    )
+
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
@@ -864,7 +943,7 @@ fun OscilloscopeLissajousCanvas(
         // Lissajous curve
         val path = Path()
         val steps = 120
-        val delta = (System.currentTimeMillis() % 4000) / 4000.0 * 2.0 * Math.PI
+        val delta = deltaAnim.toDouble()
         for (i in 0..steps) {
             val t = (i.toDouble() / steps) * 2.0 * Math.PI
             val x = cx + (sin(2.0 * t + delta) * rx).toFloat()
@@ -874,10 +953,10 @@ fun OscilloscopeLissajousCanvas(
         drawPath(path, Color(0xFF00FF66), style = Stroke(width = 2.2f))
 
         // Trajectory active point
-        val activeT = (System.currentTimeMillis() % 2000) / 2000.0 * 2.0 * Math.PI
+        val activeT = (delta * 1.5) % (2.0 * Math.PI)
         val px = cx + (sin(2.0 * activeT + delta) * rx).toFloat()
         val py = cy + (sin(3.0 * activeT) * ry).toFloat()
-        drawCircle(Color(0xFF00E5FF), radius = 4f, center = Offset(px, py))
+        drawCircle(Color(0xFF00E5FF), radius = 4.5f, center = Offset(px, py))
         drawCircle(Color.White, radius = 2f, center = Offset(px, py))
     }
 }
@@ -887,6 +966,17 @@ fun GftWaterfallCanvas(
     telemetry: TelemetryState,
     modifier: Modifier = Modifier
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "waterfall_anim")
+    val waveOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2400, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "waveOffset"
+    )
+
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
@@ -899,7 +989,6 @@ fun GftWaterfallCanvas(
             Color(0xFFFF4081),
             Color(0xFF86EFAC)
         )
-        val t = System.currentTimeMillis() / 250.0
 
         for (row in 0..4) {
             val baseY = (height * 0.22f) + (row * height * 0.16f)
@@ -909,7 +998,7 @@ fun GftWaterfallCanvas(
                 val x = (width / points) * i
                 val normX = i.toFloat() / points
                 val peak1 = Math.exp(-Math.pow((normX - 0.25).toDouble(), 2.0) * 80.0) * 18.0
-                val peak2 = Math.exp(-Math.pow((normX - 0.65).toDouble(), 2.0) * 60.0) * (14.0 + sin(t + row) * 4.0)
+                val peak2 = Math.exp(-Math.pow((normX - 0.65).toDouble(), 2.0) * 60.0) * (14.0 + sin(waveOffset + row) * 4.0)
                 val y = baseY - (peak1 + peak2).toFloat()
                 if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
             }
@@ -922,6 +1011,17 @@ fun GftWaterfallCanvas(
 fun HolographicVsaMemoryCanvas(
     modifier: Modifier = Modifier
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "holographic_anim")
+    val pulse by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(1800, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "pulse"
+    )
+
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
@@ -935,14 +1035,14 @@ fun HolographicVsaMemoryCanvas(
             val x = (width / points) * i
             val normX = (i.toFloat() / points) - 0.5f
             // Central sinc/correlation peak
-            val peak = Math.exp(-Math.pow(normX.toDouble() * 6.0, 2.0)) * (height * 0.42)
-            val noise = (sin(i * 1.5) * 4.0)
+            val peak = Math.exp(-Math.pow(normX.toDouble() * 6.0, 2.0)) * (height * (0.38 + sin(pulse) * 0.04))
+            val noise = (sin(i * 1.5 + pulse) * 3.5)
             val y = cy - (peak + noise).toFloat()
             if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
         }
         drawPath(path, Color(0xFF00E5FF), style = Stroke(width = 2f))
         // Center binding tag
-        drawCircle(Color(0xFFFFB300), radius = 3.5f, center = Offset(width / 2f, cy - (height * 0.42f)))
+        drawCircle(Color(0xFFFFB300), radius = 3.5f, center = Offset(width / 2f, cy - (height * 0.40f)))
     }
 }
 
@@ -951,18 +1051,34 @@ fun DensityDistributionCanvas(
     nodes: List<HyperNode>,
     modifier: Modifier = Modifier
 ) {
+    val displayNodes = if (nodes.isNotEmpty()) nodes.take(6) else listOf(
+        HyperNode("v1", "s_optico", 1.1f, 0f, 0f),
+        HyperNode("v2", "s_acustico", 0.9f, 0f, 0f),
+        HyperNode("v3", "hub", 1.25f, 0f, 0f),
+        HyperNode("v4", "monje", 1.4f, 0f, 0f),
+        HyperNode("v5", "s4", 0.85f, 0f, 0f),
+        HyperNode("v6", "memoria", 0.5f, 0f, 0f)
+    )
+
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
-        val count = nodes.size.coerceAtLeast(1)
-        val barWidth = (width / count) * 0.65f
+        val count = displayNodes.size.coerceAtLeast(1)
         val spacing = width / count
+        val barWidth = spacing * 0.65f
 
-        for ((idx, node) in nodes.take(6).withIndex()) {
+        val textPaint = android.graphics.Paint().apply {
+            textSize = 15f
+            isAntiAlias = true
+            typeface = android.graphics.Typeface.MONOSPACE
+            textAlign = android.graphics.Paint.Align.CENTER
+        }
+
+        for ((idx, node) in displayNodes.withIndex()) {
             val cx = (idx * spacing) + spacing / 2f
-            val normEnergy = (node.energy / 3.0f).coerceIn(0.1f, 1.0f)
-            val barHeight = height * 0.75f * normEnergy
-            val topY = height - barHeight - 8f
+            val normEnergy = (node.energy / 2.5f).coerceIn(0.12f, 1.0f)
+            val barHeight = (height * 0.62f) * normEnergy
+            val topY = height - barHeight - 18f
 
             val nodeColor = when {
                 node.label.startsWith("s_") -> Color(0xFF00FF66)
@@ -977,14 +1093,24 @@ fun DensityDistributionCanvas(
                 size = Size(barWidth, barHeight)
             )
             drawRect(
-                color = Color.White.copy(alpha = 0.5f),
+                color = Color.White.copy(alpha = 0.6f),
                 topLeft = Offset(cx - barWidth / 2f, topY),
                 size = Size(barWidth, barHeight),
                 style = Stroke(width = 0.8f)
             )
+
+            // Value text above bar
+            textPaint.color = Color.White.toArgb()
+            val valText = String.format(java.util.Locale.US, "%.2f", node.energy)
+            drawContext.canvas.nativeCanvas.drawText(valText, cx, (topY - 4f).coerceAtLeast(12f), textPaint)
+
+            // Short label below bar
+            textPaint.color = nodeColor.toArgb()
+            val shortLabel = node.label.replace("s_", "").replace("cog_", "").take(7)
+            drawContext.canvas.nativeCanvas.drawText(shortLabel, cx, height - 2f, textPaint)
         }
 
-        // Mean line
+        // Mean threshold line
         drawLine(
             Color(0xFFFFB300),
             Offset(0f, height * 0.45f),

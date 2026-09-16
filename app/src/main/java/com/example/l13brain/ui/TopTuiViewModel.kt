@@ -498,9 +498,178 @@ class TopTuiViewModel : ViewModel() {
         }
     }
 
+    fun evaluateArithmeticOrSum(input: String): String? {
+        val trimmed = input.trim()
+        val lower = trimmed.lowercase()
+
+        // 1. Property sums of the hypergraph:
+        if (lower == "sum(e)" || lower == "sum(energy)" || lower == "sum e" || lower == "sum energy" || lower == "σ(e)" || lower == "sigma(e)" || lower == "sum e(v)") {
+            val nodeEnergies = localEngine.nodes.map { "${it.label}(${String.format(java.util.Locale.US, "%.3f", it.energy)}J)" }
+            val total = localEngine.nodes.sumOf { it.energy.toDouble() }
+            return ">> [SUMA DE ENERGÍAS Σ E(v)]:\n" +
+                    "   • Desglose: ${nodeEnergies.joinToString(" + ")}\n" +
+                    "   • ENERGÍA TOTAL = ${String.format(java.util.Locale.US, "%.4f", total)} Joules (${localEngine.nodes.size} nodos activos)"
+        }
+        if (lower == "sum(w)" || lower == "sum(weights)" || lower == "sum w" || lower == "sum weight" || lower == "σ(w)" || lower == "sigma(w)") {
+            val edgeWeights = localEngine.hyperedges.map { "${it.id}(W=${String.format(java.util.Locale.US, "%.2f", it.weight)})" }
+            val total = localEngine.hyperedges.sumOf { it.weight.toDouble() }
+            return ">> [SUMA DE PESOS Σ W(e)]:\n" +
+                    "   • Hiperaristas: ${edgeWeights.joinToString(" + ")}\n" +
+                    "   • PESO TOTAL = ${String.format(java.util.Locale.US, "%.3f", total)} (${localEngine.hyperedges.size} hiperaristas)"
+        }
+        if (lower == "sum(d)" || lower == "sum(deg)" || lower == "sum(degrees)" || lower == "sum d" || lower == "sum deg") {
+            val total = localEngine.nodes.sumOf { it.degree }
+            return ">> [SUMA DE GRADOS HIPERGRÁFICOS Σ d(v)]:\n" +
+                    "   • TOTAL = $total (Teorema de Handshaking Hipergráfico)"
+        }
+
+        // 2. Comma or space separated sum: e.g. sum(10, 20, 30) or sum 1 2 3 or suma 5 10
+        val isSumFunc = lower.startsWith("sum(") && lower.endsWith(")")
+        val isSumWords = (lower.startsWith("sum ") || lower.startsWith("suma ")) && lower.drop(4).trim().firstOrNull()?.isDigit() == true
+        if (isSumFunc || isSumWords) {
+            val payload = if (isSumFunc) lower.substring(4, lower.length - 1) else lower.replace("suma", "").replace("sum", "").trim()
+            val nums = payload.split(Regex("[,\\s+]+")).mapNotNull { it.trim().toDoubleOrNull() }
+            if (nums.isNotEmpty()) {
+                val total = nums.sum()
+                val text = nums.joinToString(" + ") { if (it % 1.0 == 0.0) it.toLong().toString() else String.format(java.util.Locale.US, "%.4f", it) }
+                val res = if (total % 1.0 == 0.0) total.toLong().toString() else String.format(java.util.Locale.US, "%.4f", total)
+                return ">> [CALCULADORA L13 - SUMA]:\n   $text = $res"
+            }
+        }
+
+        // 3. General arithmetic expression: 2+2, 10 + 20, 50 * 2, 100 / 4, 2^8, sqrt(64), etc.
+        val hasDigits = trimmed.any { it.isDigit() }
+        val hasOp = trimmed.any { it in "+-*/%^" } || lower.contains("sqrt") || lower.contains("sin") || lower.contains("cos")
+        if (hasDigits && (hasOp || trimmed.toDoubleOrNull() != null)) {
+            val clean = trimmed.replace("=", "").trim()
+            val evaluated = evalMathExpression(clean)
+            if (evaluated != null) {
+                val resStr = if (evaluated % 1.0 == 0.0 && kotlin.math.abs(evaluated) < 1e14) {
+                    evaluated.toLong().toString()
+                } else {
+                    String.format(java.util.Locale.US, "%.6g", evaluated)
+                }
+                return ">> [CALCULADORA L13]:\n   $clean = $resStr"
+            }
+        }
+
+        return null
+    }
+
+    private fun evalMathExpression(str: String): Double? {
+        val clean = str.replace(" ", "")
+
+        class Parser(private val s: String) {
+            private var pos = -1
+            private var ch = ' '
+
+            init {
+                nextChar()
+            }
+
+            private fun nextChar() {
+                pos++
+                ch = if (pos < s.length) s[pos] else '\u0000'
+            }
+
+            private fun eat(charToEat: Char): Boolean {
+                while (ch == ' ') nextChar()
+                if (ch == charToEat) {
+                    nextChar()
+                    return true
+                }
+                return false
+            }
+
+            fun parse(): Double? {
+                val res = parseExpression()
+                while (ch == ' ') nextChar()
+                return if (pos < s.length) null else res
+            }
+
+            private fun parseExpression(): Double {
+                var x = parseTerm()
+                while (true) {
+                    when {
+                        eat('+') -> x += parseTerm()
+                        eat('-') -> x -= parseTerm()
+                        else -> return x
+                    }
+                }
+            }
+
+            private fun parseTerm(): Double {
+                var x = parseFactor()
+                while (true) {
+                    when {
+                        eat('*') -> x *= parseFactor()
+                        eat('/') -> {
+                            val divisor = parseFactor()
+                            if (divisor == 0.0) throw ArithmeticException("División por cero")
+                            x /= divisor
+                        }
+                        eat('%') -> x %= parseFactor()
+                        else -> return x
+                    }
+                }
+            }
+
+            private fun parseFactor(): Double {
+                if (eat('+')) return +parseFactor()
+                if (eat('-')) return -parseFactor()
+
+                var x: Double
+                val startPos = pos
+                if (eat('(')) {
+                    x = parseExpression()
+                    eat(')')
+                } else if ((ch in '0'..'9') || ch == '.') {
+                    while ((ch in '0'..'9') || ch == '.') nextChar()
+                    x = s.substring(startPos, pos).toDouble()
+                } else if (ch in 'a'..'z' || ch in 'A'..'Z') {
+                    while (ch in 'a'..'z' || ch in 'A'..'Z') nextChar()
+                    val func = s.substring(startPos, pos).lowercase()
+                    if (eat('(')) {
+                        x = parseExpression()
+                        eat(')')
+                    } else {
+                        x = parseFactor()
+                    }
+                    x = when (func) {
+                        "sqrt" -> kotlin.math.sqrt(x)
+                        "sin" -> kotlin.math.sin(x)
+                        "cos" -> kotlin.math.cos(x)
+                        "abs" -> kotlin.math.abs(x)
+                        "ln" -> kotlin.math.ln(x)
+                        "exp" -> kotlin.math.exp(x)
+                        else -> throw IllegalArgumentException("Función desconocida: $func")
+                    }
+                } else {
+                    throw IllegalArgumentException("Carácter inesperado: $ch")
+                }
+
+                if (eat('^')) x = Math.pow(x, parseFactor())
+
+                return x
+            }
+        }
+
+        return try {
+            Parser(clean).parse()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     private suspend fun processCommand(cmd: String): String {
         val trimmed = cmd.trim()
         val lower = trimmed.lowercase()
+
+        // 0. Evaluador aritmético y sumas de propiedades primero
+        val mathRes = evaluateArithmeticOrSum(trimmed)
+        if (mathRes != null) {
+            return mathRes
+        }
 
         return when {
             // MATLAB INDEXING: M(1:3, [1, 3]), M(rows, cols)
@@ -579,14 +748,15 @@ class TopTuiViewModel : ViewModel() {
                 "   • Regla: Delta W_e = \u03B7 * (mean_coact - 0.30)\n" +
                 "   • Coactivación Nodal: Sincronizada con dinámica autopoiética."
             }
-            lower.startsWith("sum") || lower.startsWith("add") || lower.startsWith("suma") || lower.startsWith("h1 + h2") || lower.startsWith("ha + hb") || lower.startsWith("union") || lower.startsWith("plus") -> {
+            lower.startsWith("sum") || lower.startsWith("add") || lower.startsWith("suma") || lower.contains("h1 + h2") || lower.contains("ha + hb") || lower.contains("h_a + h_b") || lower.contains("union") || lower.contains("plus") || lower.contains("⊕") -> {
                 when {
-                    lower.contains("direct") || lower.contains("disjoint") -> {
+                    lower.contains("direct") || lower.contains("disjoint") || lower.contains("⊕") -> {
                         val result = localEngine.performDirectSum()
                         _uiState.update {
                             it.copy(
                                 nodes = localEngine.nodes.map { n -> n.copy() },
-                                hyperedges = localEngine.hyperedges.toList()
+                                hyperedges = localEngine.hyperedges.toList(),
+                                telemetry = localEngine.telemetry
                             )
                         }
                         result
@@ -600,7 +770,8 @@ class TopTuiViewModel : ViewModel() {
                         _uiState.update {
                             it.copy(
                                 nodes = localEngine.nodes.map { n -> n.copy() },
-                                hyperedges = localEngine.hyperedges.toList()
+                                hyperedges = localEngine.hyperedges.toList(),
+                                telemetry = localEngine.telemetry
                             )
                         }
                         result

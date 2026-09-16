@@ -178,9 +178,9 @@ fun AjustesTab(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            InspectorButton("[P] Export Snapshot PNG", Color(0xFFFFB300), Modifier.weight(1f), onExportPng)
-            InspectorButton("[S] Sync to Remote API", Color(0xFF00E5FF), Modifier.weight(1f), onSyncApi)
-            InspectorButton("[D] Dump State JSON", Color(0xFF00E5FF), Modifier.weight(1f), onDumpJson)
+            InspectorButton("[P] Snapshot PNG", Color(0xFFFFB300), Modifier.weight(1f), onExportPng)
+            InspectorButton("[S] Sync Remote", Color(0xFF00E5FF), Modifier.weight(1f), onSyncApi)
+            InspectorButton("[D] Dump JSON", Color(0xFF86EFAC), Modifier.weight(1f), onDumpJson)
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -212,7 +212,7 @@ private fun InspectorButton(label: String, color: Color, modifier: Modifier = Mo
             .border(1.dp, color, RoundedCornerShape(4.dp))
             .background(Color(0xFF07121A), RoundedCornerShape(4.dp))
             .clickable { onClick() }
-            .padding(vertical = 6.dp, horizontal = 4.dp),
+            .padding(vertical = 6.dp, horizontal = 2.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -220,7 +220,9 @@ private fun InspectorButton(label: String, color: Color, modifier: Modifier = Mo
             fontFamily = FontFamily.Monospace,
             fontSize = 8.5.sp,
             fontWeight = FontWeight.Bold,
-            color = color
+            color = color,
+            maxLines = 1,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
     }
 }

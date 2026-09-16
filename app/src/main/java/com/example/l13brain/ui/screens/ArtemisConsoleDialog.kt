@@ -167,22 +167,27 @@ fun ArtemisConsoleDialog(
                 // 5. Presets Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    val presets = listOf("Inye...", "Ree...", "Dia...", "Gua...")
-                    presets.forEach { preset ->
+                    val presets = listOf(
+                        Pair("Inyectar", "Inyecta 0.5J al nodo hub_central"),
+                        Pair("Reescribir", "Aplica reescritura DPO con regla Wolfram"),
+                        Pair("Diagnóstico", "Ejecuta diagnóstico topológico completo"),
+                        Pair("Snapshot", "Guarda snapshot del hipergrafo a Firestore")
+                    )
+                    presets.forEach { (label, action) ->
                         Box(
                             modifier = Modifier
                                 .weight(1f)
                                 .border(1.dp, Color(0xFF16382B), RoundedCornerShape(4.dp))
                                 .background(Color(0xFF060D15), RoundedCornerShape(4.dp))
                                 .clickable {
-                                    promptText = "Ejecutar rutina automática $preset"
+                                    promptText = action
                                 }
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = 5.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(preset, fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = Color(0xFF86EFAC))
+                            Text(label, fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = Color(0xFF86EFAC), maxLines = 1)
                         }
                     }
                 }
@@ -206,18 +211,47 @@ fun ArtemisConsoleDialog(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("[DEVICE_HANDSHAKE] -> #root_scaffold", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFFFFB300))
-                        Text("SUCCESS", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00FF66))
+                        Text(
+                            text = "[DEVICE_HANDSHAKE] -> #root_scaffold",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 8.sp,
+                            color = Color(0xFFFFB300),
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFF072618), RoundedCornerShape(3.dp))
+                                .border(0.8.dp, Color(0xFF00FF66), RoundedCornerShape(3.dp))
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text("SUCCESS", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00FF66))
+                        }
                     }
                     Text("Artemis MCP Driver enlazado con dispositivo Android", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF94A3B8))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("[ACCESSIBILITY_SCAN] -> #top_tui_main_screen", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFFFFB300))
+                        Text(
+                            text = "[ACCESSIBILITY_SCAN] -> #top_tui_main_screen",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 8.sp,
+                            color = Color(0xFFFFB300),
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFF051C24), RoundedCornerShape(3.dp))
+                                .border(0.8.dp, Color(0xFF00E5FF), RoundedCornerShape(3.dp))
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text("ACTIVE", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E5FF))
+                        }
                     }
                     Text("Escaneo semántico de nodos UI y testTags completado", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF94A3B8))
                 }
