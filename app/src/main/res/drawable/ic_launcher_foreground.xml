@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Hyperedge Polygon 1 (Sensory) -->
+    <path
+        android:fillColor="#2200FF66"
+        android:strokeColor="#00FF66"
+        android:strokeWidth="1.5"
+        android:pathData="M34,42 L54,28 L64,48 L44,60 Z" />
+    <!-- Hyperedge Polygon 2 (Cognitive/Motor) -->
+    <path
+        android:fillColor="#2200E5FF"
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="1.5"
+        android:pathData="M54,28 L74,40 L68,68 L44,60 Z" />
+    <!-- Center Bridge Line -->
+    <path
+        android:strokeColor="#FFB300"
+        android:strokeWidth="2.0"
+        android:pathData="M54,28 L54,78" />
+    <!-- Hypergraph Nodes -->
+    <path
+        android:fillColor="#00FF66"
+        android:pathData="M34,42m-4,0a4,4 0 1,0 8,0a4,4 0 1,0 -8,0" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M74,40m-4,0a4,4 0 1,0 8,0a4,4 0 1,0 -8,0" />
+    <path
+        android:fillColor="#FFB300"
+        android:pathData="M54,28m-5,0a5,5 0 1,0 10,0a5,5 0 1,0 -10,0" />
+    <path
+        android:fillColor="#FF4081"
+        android:pathData="M44,60m-4,0a4,4 0 1,0 8,0a4,4 0 1,0 -8,0" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M68,68m-4,0a4,4 0 1,0 8,0a4,4 0 1,0 -8,0" />
+    <path
+        android:fillColor="#00FF66"
+        android:pathData="M54,78m-4.5,0a4.5,4.5 0 1,0 9,0a4.5,4.5 0 1,0 -9,0" />
+</vector>

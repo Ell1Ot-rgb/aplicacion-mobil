@@ -1,6 +1,7 @@
 package com.ell1ot.l13monitor.data.repository
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -14,14 +15,29 @@ class CredentialsRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     @Named("L13_BASE_URL_DEFAULT") private val defaultBaseUrl: String,
 ) {
-    private val prefs by lazy {
-        EncryptedSharedPreferences.create(
-            context,
-            FILE_NAME,
-            MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-        )
+    private val prefs: SharedPreferences by lazy {
+        try {
+            EncryptedSharedPreferences.create(
+                context,
+                FILE_NAME,
+                MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+            )
+        } catch (e: Exception) {
+            try {
+                context.deleteSharedPreferences(FILE_NAME)
+                EncryptedSharedPreferences.create(
+                    context,
+                    FILE_NAME,
+                    MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+                )
+            } catch (e2: Exception) {
+                context.getSharedPreferences("${FILE_NAME}_fallback", Context.MODE_PRIVATE)
+            }
+        }
     }
 
     val baseUrl: String

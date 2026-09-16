@@ -19,24 +19,32 @@ class L13Application : Application(), Configuration.Provider {
     @Inject lateinit var workerFactory: HiltWorkerFactory
 
     override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .build()
+        get() {
+            val builder = Configuration.Builder()
+            if (::workerFactory.isInitialized) {
+                builder.setWorkerFactory(workerFactory)
+            }
+            return builder.build()
+        }
 
     override fun onCreate() {
         super.onCreate()
 
-        val wm = WorkManager.getInstance(this)
-        wm.enqueueUniquePeriodicWork(
-            HealthCheckWorker.UNIQUE_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
-            PeriodicWorkRequestBuilder<HealthCheckWorker>(15, TimeUnit.MINUTES).build(),
-        )
-        // WorkManager min periodic = 15min; the in-app poller/Refresh covers tighter cadences.
-        wm.enqueueUniquePeriodicWork(
-            CyclePollerWorker.UNIQUE_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
-            PeriodicWorkRequestBuilder<CyclePollerWorker>(15, TimeUnit.MINUTES).build(),
-        )
+        try {
+            val wm = WorkManager.getInstance(this)
+            wm.enqueueUniquePeriodicWork(
+                HealthCheckWorker.UNIQUE_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,
+                PeriodicWorkRequestBuilder<HealthCheckWorker>(15, TimeUnit.MINUTES).build(),
+            )
+            // WorkManager min periodic = 15min; the in-app poller/Refresh covers tighter cadences.
+            wm.enqueueUniquePeriodicWork(
+                CyclePollerWorker.UNIQUE_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,
+                PeriodicWorkRequestBuilder<CyclePollerWorker>(15, TimeUnit.MINUTES).build(),
+            )
+        } catch (e: Exception) {
+            android.util.Log.e("L13Application", "Error al inicializar WorkManager", e)
+        }
     }
 }
