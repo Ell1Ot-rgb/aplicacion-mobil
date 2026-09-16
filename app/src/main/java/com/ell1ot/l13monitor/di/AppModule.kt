@@ -7,7 +7,6 @@ import com.ell1ot.l13monitor.data.local.db.AppDatabase
 import com.ell1ot.l13monitor.data.remote.HerokuApiService
 import com.ell1ot.l13monitor.data.remote.L13ApiService
 import com.ell1ot.l13monitor.data.repository.CredentialsRepository
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,9 +14,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.CertificatePinner
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -90,7 +91,7 @@ object AppModule {
     ): Retrofit = Retrofit.Builder()
         .baseUrl(credentials.baseUrl.ensureTrailingSlash())
         .client(client)
-        .addConverterFactory(json.asConverterFactory(okhttp3.MediaType.get("application/json")))
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
 
     @Provides
@@ -106,7 +107,7 @@ object AppModule {
     ): Retrofit = Retrofit.Builder()
         .baseUrl(BuildConfig.HEROKU_API_BASE + "/")
         .client(client)
-        .addConverterFactory(json.asConverterFactory(okhttp3.MediaType.get("application/json")))
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
 
     @Provides

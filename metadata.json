@@ -1,0 +1,6 @@
+{
+  "name": "L13 Monitor",
+  "description": "Android monitor and control interface for L13 and Heroku dynos",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

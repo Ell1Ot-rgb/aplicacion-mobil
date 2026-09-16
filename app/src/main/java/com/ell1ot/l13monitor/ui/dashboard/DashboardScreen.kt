@@ -80,7 +80,24 @@ class DashboardViewModel @Inject constructor(
     }
 }
 
- status=${it.status}" } ?: "sin datos") {
+@Composable
+fun DashboardScreen(
+    viewModel: DashboardViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text("L13 Monitor", style = MaterialTheme.typography.headlineMedium)
+        StatusIndicator(ok = state.healthy, label = state.statusText)
+        TopologyCard(
+            title = "Último ciclo",
+            subtitle = state.lastCycle?.let { "ciclo #${it.cycle} · status=${it.status}" } ?: "sin datos",
+        ) {
             state.lastCycle?.let {
                 MetricRow("estabilidad", it.stability?.toString() ?: "—")
                 MetricRow("betti", "b0=${it.betti0 ?: "-"} b1=${it.betti1 ?: "-"}")
@@ -92,3 +109,4 @@ class DashboardViewModel @Inject constructor(
         }
     }
 }
+
