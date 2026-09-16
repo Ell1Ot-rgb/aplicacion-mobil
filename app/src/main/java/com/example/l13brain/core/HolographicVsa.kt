@@ -45,7 +45,26 @@ class HolographicVsa(
         }
 
         if (memoryVecs.size > 50) {
+            // v3 fix (audit #2023): evicted vector must be subtracted from the
+            // superposition, otherwise the memory stays polluted forever and the
+            // "bounded memory" claim was false. Because superPosition is a
+            // non-linear tanh(sum) accumulator we cannot exactly subtract; the
+            // correct behaviour is to rebuild from the surviving vectors.
             memoryVecs.removeAt(0)
+            rebuildSuperPosition()
+        }
+    }
+
+    /** Recompute the superposition from the surviving memory vectors. */
+    private fun rebuildSuperPosition() {
+        superPosition = DoubleArray(vsaDim)
+        for (vec in memoryVecs) {
+            for (i in 0 until vsaDim) {
+                superPosition[i] += vec[i]
+            }
+        }
+        for (i in 0 until vsaDim) {
+            superPosition[i] = tanh(superPosition[i])
         }
     }
 

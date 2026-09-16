@@ -30,6 +30,10 @@ data class ArtemisSessionState(
  * Artemis Automation Bridge (Host / Agent Controller)
  * Bridges Google Artemis automation protocol commands with L13 Brain UI and Engine.
  */
+// ============================================================
+// LAB-ONLY simulación. No real Artemis / host automation is wired;
+// connection state and action log are fabricated defaults (audit #2023).
+// ============================================================
 class ArtemisBridgeController {
 
     private val _sessionState = MutableStateFlow(

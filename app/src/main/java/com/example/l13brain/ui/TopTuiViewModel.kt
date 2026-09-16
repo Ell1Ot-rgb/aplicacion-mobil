@@ -49,9 +49,10 @@ data class TopTuiUiState(
     val showGuideDialog: Boolean = false,
     val showArtemisDialog: Boolean = false,
     val showCalculatorDialog: Boolean = false,
-    val restApiUrl: String = "https://l13-brain-vps.internal",
-    val wssApiUrl: String = "wss://l13-brain-vps.internal/ws",
-    val statusMessage: String = "WSS: [CONNECTED 12ms]",
+    val restApiUrl: String = "https://intense-reef-08270-20c09ed2b660.herokuapp.com",
+    // v3 fix: real Heroku REST host; no WS endpoint exists yet.
+    val wssApiUrl: String = "",
+    val statusMessage: String = "OFFLINE LAB (dyno no enlazado)",
     val currentUser: UserProfile? = null,
     val savedSnapshots: List<HypergraphSnapshotRecord> = emptyList(),
     val artemisSession: ArtemisSessionState = ArtemisSessionState(),
@@ -82,11 +83,9 @@ class TopTuiViewModel : ViewModel() {
             selectedNodeId = "v3",
             currentUser = authManager.currentUser.value,
             savedSnapshots = authManager.savedSnapshots.value,
-            replLogs = listOf(
-                ReplLogEntry(1L, true, "mutate --rule=\"{v1, v2} -> {v3, v4, v5}\" --weight=0.95 --anneal=0.88"),
-                ReplLogEntry(2L, false, ">> REESCRITURA APLICADA: 3 hiperaristas generadas | Delta Entropía: -0.042 | Estado S4: Necesario (Box-Phi)")
-            )
-        )
+            // v3 fix: no fabricated boot log ("Delta Entropía" literal removed).
+            replLogs = emptyList()
+    )
     )
     val uiState: StateFlow<TopTuiUiState> = _uiState.asStateFlow()
 

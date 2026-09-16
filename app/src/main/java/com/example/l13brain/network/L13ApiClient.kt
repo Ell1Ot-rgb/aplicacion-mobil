@@ -26,18 +26,26 @@ class L13ApiClient(private val localEngine: LocalSimulationEngine) {
         .readTimeout(10, TimeUnit.SECONDS)
         .build()
 
-    var serverUrl: String = "https://l13-brain-vps.internal"
-    var wssUrl: String = "wss://l13-brain-vps.internal/ws"
+    // v3 fix: real Heroku dyno URL (audit #1998); the previous
+    // l13-brain-vps.internal placeholder could never resolve.
+    var serverUrl: String = "https://intense-reef-08270-20c09ed2b660.herokuapp.com"
+    // No WS endpoint exists on the dyno yet; keep blank until /v1/stream.
+    var wssUrl: String = ""
     var isRemoteConnected: Boolean = false
         private set
 
     private var webSocket: WebSocket? = null
 
-    private val _connectionStatus = MutableStateFlow("LOCAL RUNTIME [HYBRID]")
+    private val _connectionStatus = MutableStateFlow("LOCAL LAB (no remote session)")
     val connectionStatus: StateFlow<String> = _connectionStatus.asStateFlow()
 
     fun connectWebSocket(customWssUrl: String? = null) {
         if (customWssUrl != null) wssUrl = customWssUrl
+        // v3 fix: never pretend to connect when no endpoint is configured.
+        if (wssUrl.isBlank()) {
+            _connectionStatus.value = "WSS NA (endpoint no configurado)"
+            return
+        }
 
         val request = try {
             Request.Builder().url(wssUrl).build()
