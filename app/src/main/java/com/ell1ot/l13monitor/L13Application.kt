@@ -19,13 +19,9 @@ class L13Application : Application(), Configuration.Provider {
     @Inject lateinit var workerFactory: HiltWorkerFactory
 
     override val workManagerConfiguration: Configuration
-        get() {
-            val builder = Configuration.Builder()
-            if (::workerFactory.isInitialized) {
-                builder.setWorkerFactory(workerFactory)
-            }
-            return builder.build()
-        }
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     override fun onCreate() {
         super.onCreate()
@@ -44,7 +40,7 @@ class L13Application : Application(), Configuration.Provider {
                 PeriodicWorkRequestBuilder<CyclePollerWorker>(15, TimeUnit.MINUTES).build(),
             )
         } catch (e: Exception) {
-            android.util.Log.e("L13Application", "Error al inicializar WorkManager", e)
+            android.util.Log.e("L13Application", "WorkManager periodic enqueue caught exception", e)
         }
     }
 }

@@ -607,45 +607,16 @@ fun ReplCalculatorTab(
                         }
                     }
                     1 -> {
-                        // Subtab 2: KURAMOTO S¹ (Screenshot 6 + Enlace directo a Dinámica)
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            DualKuramotoCirclesCanvas(
-                                nodes = nodes,
-                                telemetry = telemetry,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(180.dp)
-                                    .background(Color(0xFF03070E), RoundedCornerShape(6.dp))
-                                    .border(1.dp, Color(0xFF103328), RoundedCornerShape(6.dp))
-                            )
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color(0xFF071C14), RoundedCornerShape(4.dp))
-                                    .border(0.8.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp))
-                                    .clickable { activeSubtabIndex = 2 }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "📈 VER DINÁMICA CONTINUA & STEM PLOT",
-                                    fontFamily = FontFamily.Monospace,
-                                    fontSize = 8.5.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF00FF66)
-                                )
-                                Text(
-                                    text = "CAMBIAR VISTA ▶",
-                                    fontFamily = FontFamily.Monospace,
-                                    fontSize = 8.sp,
-                                    color = Color(0xFF00E5FF)
-                                )
-                            }
-                        }
+                        // Subtab 2: KURAMOTO S¹ (Visualización Completa & Coherencia Polar)
+                        KuramotoS1FullView(
+                            nodes = nodes,
+                            telemetry = telemetry,
+                            onExecuteCommand = onExecuteCommand,
+                            onInjectEnergy = onInjectEnergy,
+                            onResetPhase = onResetPhase,
+                            onViewContinua = { activeSubtabIndex = 2 },
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                     2 -> {
                         // Subtab 3: DINÁMICA & STEM PLOT (Screenshot 7)
@@ -705,6 +676,14 @@ fun ReplCalculatorTab(
                                 )
                             }
                         }
+                    }
+
+                    // Dynamic Content based on activeMathBottomTab
+                    when (activeMathBottomTab) {
+                        0 -> MathMatricesBottomView(nodes, hyperedges, onExecuteCommand)
+                        1 -> TiempoMerkleBottomView(telemetry, onExecuteCommand)
+                        2 -> EspectroAtractorBottomView(telemetry, onExecuteCommand)
+                        3 -> ReglasWolframBottomView(onExecuteCommand)
                     }
 
                     // Action buttons row
@@ -1530,3 +1509,460 @@ private fun MerkleRow(label: String, value: String) {
         Text(value, fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF00FF66))
     }
 }
+
+@Composable
+private fun KuramotoS1FullView(
+    nodes: List<HyperNode>,
+    telemetry: TelemetryState,
+    onExecuteCommand: (String) -> Unit,
+    onInjectEnergy: (String, Float) -> Unit,
+    onResetPhase: (String) -> Unit,
+    onViewContinua: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val meanPhase = remember(nodes) {
+        val phases = nodes.map { it.phase }
+        if (phases.isNotEmpty()) phases.average().toFloat() else 0.5f
+    }
+    val meanAngleDeg = remember(meanPhase) {
+        val deg = (meanPhase * 180f / Math.PI.toFloat()) % 360f
+        if (deg < 0) deg + 360f else deg
+    }
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        // Dual S1 Manifold Canvas
+        DualKuramotoCirclesCanvas(
+            nodes = nodes,
+            telemetry = telemetry,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .background(Color(0xFF03070E), RoundedCornerShape(6.dp))
+                .border(1.dp, Color(0xFF103328), RoundedCornerShape(6.dp))
+        )
+
+        // S1 Telemetry HUD Card
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF040A12), RoundedCornerShape(6.dp))
+                .border(1.dp, Color(0xFF133829), RoundedCornerShape(6.dp))
+                .padding(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "┌─ COHERENCIA S¹ & VECTOR DE ORDEN R(t)",
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 9.sp,
+                    color = Color(0xFF00FF66)
+                )
+                val orderPct = (telemetry.kuramotoOrderR * 100f).coerceIn(0f, 100f)
+                Text(
+                    text = if (orderPct >= 70f) "SINCRONIZADO [${String.format(java.util.Locale.US, "%.1f", orderPct)}%]" else "DISPERSIÓN S¹ [${String.format(java.util.Locale.US, "%.1f", orderPct)}%]",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (orderPct >= 70f) Color(0xFF00FF66) else Color(0xFFFFB300)
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "• R(t): ${String.format(java.util.Locale.US, "%.4f", telemetry.kuramotoOrderR)}",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.5.sp,
+                    color = Color(0xFF00E5FF)
+                )
+                Text(
+                    text = "• Fase Media Ψ: ${String.format(java.util.Locale.US, "%.1f", meanAngleDeg)}° (${String.format(java.util.Locale.US, "%.2f", meanPhase)} rad)",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.5.sp,
+                    color = Color(0xFF86EFAC)
+                )
+                Text(
+                    text = "• K: 0.850",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.5.sp,
+                    color = Color(0xFFFF4081)
+                )
+            }
+        }
+
+        // Quick Kuramoto Action Buttons
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            CalcSpecialPill("⚡ Sincronizar Fases (θ→Ψ)", Color(0xFF00FF66)) {
+                onExecuteCommand("phase --sync")
+            }
+            CalcSpecialPill("🌀 Perturbar Ruido (Δθ)", Color(0xFF00E5FF)) {
+                onExecuteCommand("diffuse 0.20")
+            }
+            CalcSpecialPill("🎯 Acoplar Kuramoto", Color(0xFFFFB300)) {
+                onExecuteCommand("kuramoto")
+            }
+            CalcSpecialPill("🔄 Invertir (+π)", Color(0xFFFF4081)) {
+                onExecuteCommand("phase --invert")
+            }
+            CalcSpecialPill("📈 Ver Stem Plot ▶", Color(0xFF86EFAC)) {
+                onViewContinua()
+            }
+        }
+
+        // Detailed Node Phase List
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF03070E), RoundedCornerShape(6.dp))
+                .border(1.dp, Color(0xFF103328), RoundedCornerShape(6.dp))
+                .padding(6.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            Text(
+                text = "DISTRIBUCIÓN ANGULAR DE FASES NODALES θ_i:",
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                fontSize = 8.5.sp,
+                color = Color(0xFF00E5FF)
+            )
+
+            nodes.forEach { node ->
+                val angleDeg = ((node.phase * 180f / Math.PI.toFloat()) % 360f + 360f) % 360f
+                val phaseDiff = kotlin.math.abs(node.phase - meanPhase)
+                val isLocked = phaseDiff < 0.6f || phaseDiff > (2 * Math.PI.toFloat() - 0.6f)
+                val nodeColor = when {
+                    node.modalState.contains("Sensorial", ignoreCase = true) -> Color(0xFF00FF66)
+                    node.modalState.contains("Cognitivo", ignoreCase = true) -> Color(0xFFFFB300)
+                    node.modalState.contains("Motor", ignoreCase = true) -> Color(0xFF00E5FF)
+                    else -> Color(0xFFFF4081)
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF060D17), RoundedCornerShape(3.dp))
+                        .border(0.6.dp, Color(0xFF10281F), RoundedCornerShape(3.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Box(modifier = Modifier.size(5.dp).background(nodeColor, CircleShape))
+                        Text(
+                            text = node.label,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = nodeColor
+                        )
+                        Text(
+                            text = "θ=${String.format(java.util.Locale.US, "%.2f", node.phase)}rad (${String.format(java.util.Locale.US, "%.0f", angleDeg)}°)",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 7.5.sp,
+                            color = Color(0xFFCBD5E1)
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = if (isLocked) "LOCKED" else "DRIFT",
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 7.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isLocked) Color(0xFF00FF66) else Color(0xFFFFB300)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .border(0.8.dp, Color(0xFF00FF66), RoundedCornerShape(2.dp))
+                                .background(Color(0xFF06150E))
+                                .clickable { onInjectEnergy(node.id, 0.5f) }
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text("+0.5J", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFF00FF66))
+                        }
+                        Box(
+                            modifier = Modifier
+                                .border(0.8.dp, Color(0xFF00E5FF), RoundedCornerShape(2.dp))
+                                .background(Color(0xFF06151F))
+                                .clickable { onResetPhase(node.id) }
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text("Rst", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFF00E5FF))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MathMatricesBottomView(
+    nodes: List<HyperNode>,
+    hyperedges: List<HyperEdge>,
+    onExecuteCommand: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF03070E), RoundedCornerShape(4.dp))
+            .border(0.8.dp, Color(0xFF103328), RoundedCornerShape(4.dp))
+            .padding(6.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "SUBMATRIZ M(1:3, [1, 3]) // ÍNDICES MATLAB:",
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                fontSize = 8.5.sp,
+                color = Color(0xFF00E5FF)
+            )
+            Text(
+                text = "${nodes.size}×${hyperedges.size} INCIDENCIA",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                color = Color(0xFF86EFAC)
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            val matrixData = listOf(
+                listOf(1.10f, 0.00f, 0.44f),
+                listOf(0.90f, 0.00f, 0.44f),
+                listOf(1.25f, 1.40f, 0.44f)
+            )
+            matrixData.forEachIndexed { rIdx, row ->
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(
+                        text = "Fila ${rIdx + 1}",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 7.sp,
+                        color = Color.Gray
+                    )
+                    row.forEach { cellVal ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(22.dp)
+                                .background(if (cellVal > 0f) Color(0xFF0A261A) else Color(0xFF080D14), RoundedCornerShape(2.dp))
+                                .border(0.6.dp, if (cellVal > 0f) Color(0xFF00FF66) else Color(0xFF162534), RoundedCornerShape(2.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = String.format(java.util.Locale.US, "%.2f", cellVal),
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (cellVal > 0f) Color(0xFF00FF66) else Color(0xFF4A6572)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TiempoMerkleBottomView(
+    telemetry: TelemetryState,
+    onExecuteCommand: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF03070E), RoundedCornerShape(4.dp))
+            .border(0.8.dp, Color(0xFF103328), RoundedCornerShape(4.dp))
+            .padding(6.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "DAG MERKLE // REGISTRO CRIPTOGRÁFICO L13:",
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                fontSize = 8.5.sp,
+                color = Color(0xFFFFB300)
+            )
+            Text(
+                text = "TICK #${telemetry.totalTicks}",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                color = Color(0xFF00FF66)
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "• ROOT HASH: [${telemetry.stateHash.take(16)}...]",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                color = Color(0xFFCBD5E1)
+            )
+            Text(
+                text = "• ZERO-BOXING: [OK]",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                color = Color(0xFF00FF66)
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "• ENTROPÍA H: ${String.format(java.util.Locale.US, "%.3f", telemetry.entropyShannon)} bits",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                color = Color(0xFF86EFAC)
+            )
+            Text(
+                text = "• HISTORIAL: 2048 BLOQUES",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                color = Color.Gray
+            )
+        }
+    }
+}
+
+@Composable
+private fun EspectroAtractorBottomView(
+    telemetry: TelemetryState,
+    onExecuteCommand: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF03070E), RoundedCornerShape(4.dp))
+            .border(0.8.dp, Color(0xFF103328), RoundedCornerShape(4.dp))
+            .padding(6.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "ESPECTRO DEL LAPLACIANO L_H // ATRACTOR:",
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                fontSize = 8.5.sp,
+                color = Color(0xFF00E5FF)
+            )
+            Text(
+                text = "λ₂ = 0.428 (GAP)",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                color = Color(0xFFFFB300)
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("λ₁=0.000", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color.Gray)
+            Text("λ₂=0.428", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF00FF66))
+            Text("λ₃=0.892", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF00E5FF))
+            Text("λ₄=1.240", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFF86EFAC))
+            Text("λ₅=1.850", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFFFFB300))
+            Text("λ₆=2.410", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, color = Color(0xFFFF4081))
+        }
+
+        Text(
+            text = "• Manifold de Lyapunov: Convergencia estable en límite S4 autopoiético.",
+            fontFamily = FontFamily.Monospace,
+            fontSize = 7.5.sp,
+            color = Color(0xFF6B8299)
+        )
+    }
+}
+
+@Composable
+private fun ReglasWolframBottomView(
+    onExecuteCommand: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF03070E), RoundedCornerShape(4.dp))
+            .border(0.8.dp, Color(0xFF103328), RoundedCornerShape(4.dp))
+            .padding(6.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "REGLAS DE REESCRITURA CELULAR WOLFRAM:",
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                fontSize = 8.5.sp,
+                color = Color(0xFFFF4081)
+            )
+            Text(
+                text = "ANNEAL = 0.88",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                color = Color(0xFFFFB300)
+            )
+        }
+
+        Text(
+            text = "• REGLA T4: {{x, y}, {y, z}, {z, x}} ⟼ {{x, y, z}, {x, w}} (Tríada Poliádica)",
+            fontFamily = FontFamily.Monospace,
+            fontSize = 8.sp,
+            color = Color(0xFFCBD5E1)
+        )
+        Text(
+            text = "• REGLA T6: Contracción modal con preservación de números de Betti β₀ y β₁.",
+            fontFamily = FontFamily.Monospace,
+            fontSize = 8.sp,
+            color = Color(0xFF86EFAC)
+        )
+    }
+}
+

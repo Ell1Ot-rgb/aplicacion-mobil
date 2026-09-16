@@ -66,13 +66,13 @@ class LocalSimulationEngine {
         sumExecutionTick = 20L
         sumExecutionCount = 0
 
-        // Initialize Nodes matching the V3.5 production hypergraph specification
-        nodes.add(HyperNode("s_optico", "s_optico", energy = 1.10f, x = 0.22f, y = 0.25f, modalState = "[] Phi (Sensorial)", degree = 2, phase = 0.35f, naturalFreq = 0.12f))
-        nodes.add(HyperNode("s_acustico", "s_acustico", energy = 0.90f, x = 0.22f, y = 0.70f, modalState = "<> Psi (Sensorial)", degree = 2, phase = 0.45f, naturalFreq = 0.13f))
-        nodes.add(HyperNode("hub_central", "hub_central", energy = 1.25f, x = 0.50f, y = 0.48f, modalState = "[] Phi (Transductor)", degree = 3, phase = 1.85f, naturalFreq = 0.15f))
-        nodes.add(HyperNode("cog_monje", "cog_monje", energy = 1.40f, x = 0.78f, y = 0.23f, modalState = "[] Phi (Cognitivo S4)", degree = 3, phase = 3.20f, naturalFreq = 0.18f))
-        nodes.add(HyperNode("cog_s4", "cog_s4", energy = 0.85f, x = 0.80f, y = 0.65f, modalState = "<> Chi (Cognitivo S4)", degree = 2, phase = 3.40f, naturalFreq = 0.19f))
-        nodes.add(HyperNode("cog_memoria", "cog_memoria", energy = 0.50f, x = 0.50f, y = 0.82f, modalState = "[] Box-Phi", degree = 2, phase = 3.10f, naturalFreq = 0.17f))
+        // Initialize Nodes matching balanced, well-proportioned hypergraph specification
+        nodes.add(HyperNode("s_optico", "s_optico", energy = 1.10f, x = 0.25f, y = 0.36f, modalState = "[] Phi (Sensorial)", degree = 2, phase = 0.35f, naturalFreq = 0.12f))
+        nodes.add(HyperNode("s_acustico", "s_acustico", energy = 0.90f, x = 0.25f, y = 0.64f, modalState = "<> Psi (Sensorial)", degree = 2, phase = 0.45f, naturalFreq = 0.13f))
+        nodes.add(HyperNode("hub_central", "hub_central", energy = 1.25f, x = 0.50f, y = 0.50f, modalState = "[] Phi (Transductor)", degree = 3, phase = 1.85f, naturalFreq = 0.15f))
+        nodes.add(HyperNode("cog_monje", "cog_monje", energy = 1.40f, x = 0.75f, y = 0.36f, modalState = "[] Phi (Cognitivo S4)", degree = 3, phase = 3.20f, naturalFreq = 0.18f))
+        nodes.add(HyperNode("cog_s4", "cog_s4", energy = 0.85f, x = 0.75f, y = 0.64f, modalState = "<> Chi (Cognitivo S4)", degree = 2, phase = 3.40f, naturalFreq = 0.19f))
+        nodes.add(HyperNode("cog_memoria", "cog_memoria", energy = 0.50f, x = 0.58f, y = 0.74f, modalState = "[] Box-Phi", degree = 2, phase = 3.10f, naturalFreq = 0.17f))
 
         // Initialize Heterogeneous Hyperedges (k=3, k=4)
         hyperedges.add(HyperEdge("e1_sensorial", "e1_sensorial (k=3)", weight = 1.20f, nodeIds = listOf("s_optico", "s_acustico", "hub_central"), colorHex = 0xFF00FF66L))
@@ -99,22 +99,23 @@ class LocalSimulationEngine {
     fun stepSimulation(): TelemetryState {
         tickCount++
 
-        // 1. Force-Directed Physics Step
+        // 1. Force-Directed Physics Step (Gentle & Balanced to maintain clean layout)
         if (physicsConfig.isPhysicsRunning && nodes.size > 1) {
-            val kr = physicsConfig.coulombRepulsionKr * 0.00002f
-            val ka = physicsConfig.hookeSpringKa * 0.05f
+            val kr = physicsConfig.coulombRepulsionKr * 0.000003f
+            val ka = physicsConfig.hookeSpringKa * 0.06f
             val damping = physicsConfig.frictionDampingGamma
 
-            // Coulomb Repulsion between all pairs of nodes
+            // Coulomb Repulsion between all pairs of nodes (capped to avoid blowing up)
             for (i in 0 until nodes.size) {
                 for (j in i + 1 until nodes.size) {
                     val n1 = nodes[i]
                     val n2 = nodes[j]
                     val dx = n2.x - n1.x
                     val dy = n2.y - n1.y
-                    val distSq = max(0.002f, dx * dx + dy * dy)
+                    val distSq = max(0.005f, dx * dx + dy * dy)
                     val dist = sqrt(distSq)
-                    val force = kr / distSq
+                    val rawForce = kr / distSq
+                    val force = rawForce.coerceAtMost(0.004f)
                     val fx = (dx / dist) * force
                     val fy = (dy / dist) * force
 
@@ -148,18 +149,18 @@ class LocalSimulationEngine {
                 }
             }
 
-            // Central gravity pull to keep graph nicely centered
+            // Central gravity pull to keep graph nicely centered and well-scaled
             val centerTargetX = 0.50f
-            val centerTargetY = 0.48f
+            val centerTargetY = 0.50f
             for (node in nodes) {
-                node.vx += (centerTargetX - node.x) * 0.002f
-                node.vy += (centerTargetY - node.y) * 0.002f
+                node.vx += (centerTargetX - node.x) * 0.012f
+                node.vy += (centerTargetY - node.y) * 0.012f
 
                 // Apply velocity and damping
                 node.vx *= damping
                 node.vy *= damping
-                node.x = (node.x + node.vx).coerceIn(0.08f, 0.92f)
-                node.y = (node.y + node.vy).coerceIn(0.12f, 0.88f)
+                node.x = (node.x + node.vx).coerceIn(0.16f, 0.84f)
+                node.y = (node.y + node.vy).coerceIn(0.20f, 0.80f)
             }
         }
 

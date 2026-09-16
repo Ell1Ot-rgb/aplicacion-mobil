@@ -73,7 +73,7 @@ fun ToposcopioGrafoTab(
     onWolframMutation: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var selectedFilterTab by remember { mutableIntStateOf(1) } // 2. DIRAC & ( by default
+    var viewMode by remember { mutableIntStateOf(2) } // 0: 2D Euler, 1: 3D DPO, 2: Ambos (Split)
     var showDensityOverlay by remember { mutableStateOf(false) }
 
     Column(
@@ -82,7 +82,7 @@ fun ToposcopioGrafoTab(
             .padding(top = 2.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 1. Frame Header: "┌─ TOPOSCOPIO L13 // DOMINIO MIXTO" + MERKLE Badge
+        // 1. Frame Header: "┌─ TOPOSCOPIO L13 // DOMINIO MIXTO" + View Mode Switcher + MERKLE Badge
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -98,7 +98,41 @@ fun ToposcopioGrafoTab(
                 modifier = Modifier.weight(1f)
             )
 
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(4.dp))
+
+            // View Mode Selector: 2D / 3D / AMBOS
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                listOf(0 to "2D", 1 to "3D", 2 to "AMBOS").forEach { (modeIdx, modeLabel) ->
+                    val isModeSelected = (viewMode == modeIdx)
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                if (isModeSelected) Color(0xFF0C2B1D) else Color(0xFF060F16),
+                                RoundedCornerShape(3.dp)
+                            )
+                            .border(
+                                0.8.dp,
+                                if (isModeSelected) Color(0xFF00FF66) else Color(0xFF163228),
+                                RoundedCornerShape(3.dp)
+                            )
+                            .clickable { viewMode = modeIdx }
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = modeLabel,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 8.sp,
+                            color = if (isModeSelected) Color(0xFF00FF66) else Color(0xFF7FA894)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.width(4.dp))
 
             Box(
                 modifier = Modifier
@@ -118,40 +152,42 @@ fun ToposcopioGrafoTab(
         }
 
         // 2. Main Hypergraph Canvas Card (Convex Euler Ellipses & Bridge)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(370.dp)
-                .background(Color(0xFF03070E), RoundedCornerShape(8.dp))
-                .border(1.2.dp, Color(0xFF103328), RoundedCornerShape(8.dp))
-        ) {
-            HypergraphCanvas(
-                nodes = nodes,
-                hyperedges = hyperedges,
-                selectedNodeId = selectedNodeId,
-                showDensityOverlay = showDensityOverlay,
-                onNodeSelected = onNodeSelected,
-                onNodeDragged = onNodeDragged,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            // Top-right floating button: "📊 DENSIDAD DE OCUPACIÓN"
+        if (viewMode == 0 || viewMode == 2) {
             Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .border(1.dp, if (showDensityOverlay) Color(0xFF00E5FF) else Color(0xFF00FF66), RoundedCornerShape(4.dp))
-                    .background(if (showDensityOverlay) Color(0xFF072430) else Color(0xFF061A12), RoundedCornerShape(4.dp))
-                    .clickable { showDensityOverlay = !showDensityOverlay }
-                    .padding(horizontal = 6.dp, vertical = 3.dp)
+                    .fillMaxWidth()
+                    .height(230.dp)
+                    .background(Color(0xFF03070E), RoundedCornerShape(8.dp))
+                    .border(1.2.dp, Color(0xFF103328), RoundedCornerShape(8.dp))
             ) {
-                Text(
-                    text = if (showDensityOverlay) "📊 DENSIDAD [ACTIVA]" else "📊 DENSIDAD DE OCUPACIÓN",
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (showDensityOverlay) Color(0xFF00E5FF) else Color(0xFF00FF66)
+                HypergraphCanvas(
+                    nodes = nodes,
+                    hyperedges = hyperedges,
+                    selectedNodeId = selectedNodeId,
+                    showDensityOverlay = showDensityOverlay,
+                    onNodeSelected = onNodeSelected,
+                    onNodeDragged = onNodeDragged,
+                    modifier = Modifier.fillMaxSize()
                 )
+
+                // Top-right floating button: "📊 DENSIDAD DE OCUPACIÓN"
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .border(1.dp, if (showDensityOverlay) Color(0xFF00E5FF) else Color(0xFF00FF66), RoundedCornerShape(4.dp))
+                        .background(if (showDensityOverlay) Color(0xFF072430) else Color(0xFF061A12), RoundedCornerShape(4.dp))
+                        .clickable { showDensityOverlay = !showDensityOverlay }
+                        .padding(horizontal = 6.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = if (showDensityOverlay) "📊 DENSIDAD [ACTIVA]" else "📊 DENSIDAD DE OCUPACIÓN",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (showDensityOverlay) Color(0xFF00E5FF) else Color(0xFF00FF66)
+                    )
+                }
             }
         }
 
@@ -169,116 +205,15 @@ fun ToposcopioGrafoTab(
             TopGraphActionPill("W REGLA WOLFRAM", Color(0xFFFF4081), onWolframMutation)
         }
 
-        // 4. Bottom Card: "┌─ TOPOSCOPIO: [CH1: s_optico] [CH2: s_optico] [DC]      [TRIG: AUTO ●]"
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF040810), RoundedCornerShape(8.dp))
-                .border(1.2.dp, Color(0xFF00FF66), RoundedCornerShape(8.dp))
-                .padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            // Oscilloscope Control Bar
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "┌─ TOPOSCOPIO:",
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp,
-                        color = Color(0xFF00FF66)
-                    )
-
-                    BadgePill(text = "CH1: s_optico", color = Color(0xFFFFB300), bg = Color(0xFF241505))
-                    BadgePill(text = "CH2: s_optico", color = Color(0xFF00E5FF), bg = Color(0xFF051C24))
-                    BadgePill(text = "DC", color = Color(0xFF00FF66), bg = Color(0xFF061A12))
-                }
-
-                BadgePill(text = "TRIG: AUTO ●", color = Color(0xFF00FF66), bg = Color(0xFF061A12))
-            }
-
-            // Filter Subtabs: 1. MORFOLOGÍA | 2. DIRAC S¹ | 3. GFT WATERFALL | 4. TRIGGER CAUSAL | 5. MEMORIA VSA | 6. DENSIDAD
-            val subtabs = listOf(
-                "1. MORFOLOGÍA",
-                "2. DIRAC S¹",
-                "3. GFT WATERFALL",
-                "4. TRIGGER CAUSAL",
-                "5. MEMORIA VSA",
-                "6. DENSIDAD"
+        // 4. HGS-9500DPO Real-Time Persistent Hypergraph Oscilloscope (Industrial Metrology Grade)
+        if (viewMode == 1 || viewMode == 2) {
+            Hgs9500DpoOscilloscope(
+                nodes = nodes,
+                hyperedges = hyperedges,
+                telemetry = telemetry,
+                onAmalgamatedSum = onAmalgamatedSum,
+                modifier = Modifier.fillMaxWidth()
             )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                subtabs.forEachIndexed { index, title ->
-                    val isActive = selectedFilterTab == index
-                    Box(
-                        modifier = Modifier
-                            .border(1.dp, if (isActive) Color(0xFF00FF66) else Color(0xFF16382B), RoundedCornerShape(3.dp))
-                            .background(if (isActive) Color(0xFF072618) else Color(0xFF070E17), RoundedCornerShape(3.dp))
-                            .clickable { selectedFilterTab = index }
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = title,
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isActive) Color(0xFF00FF66) else Color(0xFF5B786D)
-                        )
-                    }
-                }
-            }
-
-            // Dynamic Oscilloscope Screen based on Subtab
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(95.dp)
-                    .background(Color(0xFF02060B), RoundedCornerShape(4.dp))
-                    .border(0.8.dp, Color(0xFF0F3022), RoundedCornerShape(4.dp))
-            ) {
-                when (selectedFilterTab) {
-                    0 -> OscilloscopeLissajousCanvas(telemetry, Modifier.fillMaxSize())
-                    1 -> DiracPolarRadarCanvas(nodes, telemetry, Modifier.fillMaxSize())
-                    2 -> GftWaterfallCanvas(telemetry, Modifier.fillMaxSize())
-                    3 -> DualChannelOscilloscopeCanvas(telemetry, Modifier.fillMaxSize())
-                    4 -> HolographicVsaMemoryCanvas(Modifier.fillMaxSize())
-                    else -> DensityDistributionCanvas(nodes, Modifier.fillMaxSize())
-                }
-            }
-
-            // Dynamic Telemetry line
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "ΔE: 0.00J | Δθ: 0.00rad | TAYLOR +100ms: 0.19J | R(t): ${String.format("%.1f", telemetry.kuramotoOrderR * 100)}%",
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 8.sp,
-                    color = Color(0xFF00FF66)
-                )
-
-                Text(
-                    text = "GKF: S1 SYNC",
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 8.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF00E5FF)
-                )
-            }
         }
 
         // 5. Zoom / Topology Footer Line
@@ -527,12 +462,12 @@ private fun DrawScope.drawEulerHypergraph(
         val minY = memberPoints.minOf { it.y }
         val maxY = memberPoints.maxOf { it.y }
 
-        val padX = 42f
-        val padY = 34f
-        val boxLeft = (minX - padX).coerceAtLeast(8f)
-        val boxTop = (minY - padY).coerceAtLeast(8f)
-        val boxWidth = ((maxX - minX) + padX * 2f).coerceAtMost(width - boxLeft - 8f)
-        val boxHeight = ((maxY - minY) + padY * 2f).coerceAtMost(height - boxTop - 8f)
+        val padX = 22f
+        val padY = 16f
+        val boxLeft = (minX - padX).coerceAtLeast(6f)
+        val boxTop = (minY - padY).coerceAtLeast(6f)
+        val boxWidth = ((maxX - minX) + padX * 2f).coerceAtMost(width - boxLeft - 6f)
+        val boxHeight = ((maxY - minY) + padY * 2f).coerceAtMost(height - boxTop - 6f)
 
         // Draw bounding polyadic envelope / ellipse
         val glowAlpha = (0.07f * edge.phosphorLuminance * (0.8f + pulseAlpha * 0.4f)).coerceIn(0.04f, 0.22f)
