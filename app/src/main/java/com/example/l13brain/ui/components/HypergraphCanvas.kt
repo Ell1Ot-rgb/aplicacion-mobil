@@ -273,7 +273,7 @@ fun ToposcopioGrafoTab(
                                 .border(0.8.dp, Color(0xFF00FF66), RoundedCornerShape(3.dp))
                                 .padding(horizontal = 4.dp, vertical = 1.dp)
                         ) {
-                            Text("β₀=$betti0", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00FF66))
+                            Text("β₀=" + if (betti0 < 0) "NA" else "$betti0", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00FF66))
                         }
                         Box(
                             modifier = Modifier
@@ -281,7 +281,7 @@ fun ToposcopioGrafoTab(
                                 .border(0.8.dp, Color(0xFF00E5FF), RoundedCornerShape(3.dp))
                                 .padding(horizontal = 4.dp, vertical = 1.dp)
                         ) {
-                            Text("β₁=$betti1", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00E5FF))
+                            Text("β₁=" + if (betti1 < 0) "NA" else "$betti1", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00E5FF))
                         }
                         Box(
                             modifier = Modifier
@@ -289,7 +289,7 @@ fun ToposcopioGrafoTab(
                                 .border(0.8.dp, Color(0xFFFFB300), RoundedCornerShape(3.dp))
                                 .padding(horizontal = 4.dp, vertical = 1.dp)
                         ) {
-                            Text("β₂=$betti2", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFFFFB300))
+                            Text("β₂=" + if (betti2 < 0) "NA" else "$betti2", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFFFFB300))
                         }
                     }
 
@@ -343,6 +343,11 @@ fun ToposcopioGrafoTab(
                             fontSize = 8.sp,
                             color = Color(0xFF00E5FF)
                         )
+                        // v3 fix: empty barcode => honest NA message, no fabricated intervals.
+                        if (persistenceIntervals.isEmpty()) {
+                            Text("HOMOLOGÍA PERSISTENTE: NA (motor TDA no implementado)",
+                                fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF94A3B8))
+                        } else {
                         persistenceIntervals.forEach { interval ->
                             val isAlive = (filtrationEpsilon >= interval.birth && filtrationEpsilon <= interval.death)
                             val barColor = when (interval.dimension) {
@@ -372,6 +377,7 @@ fun ToposcopioGrafoTab(
                                 )
                             }
                         }
+    }
                     }
                 }
             }

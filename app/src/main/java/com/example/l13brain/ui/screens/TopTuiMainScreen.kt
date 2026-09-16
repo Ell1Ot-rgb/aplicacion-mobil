@@ -162,6 +162,8 @@ fun TopTuiMainScreen(
         if (state.showCalculatorDialog) {
             HypergraphSpectralCalculatorDialog(
                 telemetry = state.telemetry,
+                nodes = state.nodes,
+                hyperedges = state.hyperedges,
                 onDismiss = { topTuiViewModel.toggleCalculatorDialog(false) },
                 onExecuteCommand = { cmd ->
                     topTuiViewModel.executeReplCommand(cmd)

@@ -29,6 +29,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+// Sentinel: homology value unavailable until a real TDA engine feeds it.
+const val BETTI_UNKNOWN: Int = -1
+
 data class TopTuiUiState(
     val nodes: List<HyperNode> = emptyList(),
     val hyperedges: List<HyperEdge> = emptyList(),
@@ -55,21 +58,11 @@ data class TopTuiUiState(
     val temporalRegime: HypergraphTemporalRegime = HypergraphTemporalRegime.PERSISTENTE,
     val filtrationEpsilon: Float = 0.85f,
     val isSweepActive: Boolean = false,
-    val betti0: Int = 2,
-    val betti1: Int = 1,
-    val betti2: Int = 1,
-    val persistenceIntervals: List<PersistenceBarcodeInterval> = listOf(
-        PersistenceBarcodeInterval(0, "H₀ [v₁_sens_opt ∪ e₁]", 0.00f, 0.25f, "e1_sensorial"),
-        PersistenceBarcodeInterval(0, "H₀ [v₂_sens_aud ∪ e₁]", 0.00f, 0.25f, "e1_sensorial"),
-        PersistenceBarcodeInterval(0, "H₀ [v₄_cog_s4 ∪ e₂]", 0.00f, 0.50f, "e2_cognitiva"),
-        PersistenceBarcodeInterval(0, "H₀ [v₅_cog_mem ∪ e₂]", 0.00f, 0.50f, "e2_cognitiva"),
-        PersistenceBarcodeInterval(0, "H₀ [v₆_mot_out ∪ e₃]", 0.00f, 0.85f, "e3_motor_feed"),
-        PersistenceBarcodeInterval(0, "H₀ [v₇_feed_loop ∪ e₃]", 0.00f, 0.85f, "e3_motor_feed"),
-        PersistenceBarcodeInterval(0, "H₀ [Componente Conexa Global v₃_hub]", 0.00f, 2.00f, "v3_hub_bridge"),
-        PersistenceBarcodeInterval(1, "H₁ [Ciclo 1D {v₁, v₃, v₄, v₆}]", 0.50f, 1.20f, "e4_holografica"),
-        PersistenceBarcodeInterval(1, "H₁ [Cavidad Homológica Persistente]", 0.85f, 1.70f, "Complejo K(H)"),
-        PersistenceBarcodeInterval(2, "H₂ [Cavidad Tetraédrica k=4]", 0.85f, 2.10f, "e3 ∪ e4")
-    )
+    // v3 fix (audit #2023): literals removed; -1 renders as "NA".
+    val betti0: Int = BETTI_UNKNOWN,
+    val betti1: Int = BETTI_UNKNOWN,
+    val betti2: Int = BETTI_UNKNOWN,
+    val persistenceIntervals: List<PersistenceBarcodeInterval> = emptyList()
 )
 
 class TopTuiViewModel : ViewModel() {
@@ -199,13 +192,11 @@ class TopTuiViewModel : ViewModel() {
         addLog(true, "sweep --${if (next) "start" else "pause"} --param=epsilon")
     }
 
-    private fun computeBettiAtEpsilon(eps: Float): Triple<Int, Int, Int> {
-        val intervals = _uiState.value.persistenceIntervals
-        val b0 = intervals.count { it.dimension == 0 && eps >= it.birth && eps <= it.death }.coerceAtLeast(1)
-        val b1 = intervals.count { it.dimension == 1 && eps >= it.birth && eps <= it.death }
-        val b2 = intervals.count { it.dimension == 2 && eps >= it.birth && eps <= it.death }
-        return Triple(b0, b1, b2)
-    }
+    // v3 fix: epsilon-sweep no longer counts over fabricated intervals.
+    // A real Vietoris-Rips / boundary-matrix reduction is not implemented,
+    // so homology stays UNKNOWN instead of displaying invented numbers.
+    private fun computeBettiAtEpsilon(@Suppress("UNUSED_PARAMETER") eps: Float): Triple<Int, Int, Int> =
+        Triple(BETTI_UNKNOWN, BETTI_UNKNOWN, BETTI_UNKNOWN)
 
     private fun observeConnection() {
         viewModelScope.launch {
