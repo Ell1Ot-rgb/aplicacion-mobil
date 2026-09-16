@@ -81,13 +81,35 @@ fun ReplCalculatorTab(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // 1. Title Frame
-        Text(
-            text = "┌─ L13 BRAIN INTERACTIVE REPL CALCULATOR",
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            fontSize = 11.sp,
-            color = Color(0xFF00FF66)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "┌─ L13 BRAIN INTERACTIVE REPL CALCULATOR",
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                fontSize = 11.sp,
+                color = Color(0xFF00FF66)
+            )
+
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFF072618), RoundedCornerShape(4.dp))
+                    .border(1.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp))
+                    .clickable { onExecuteCommand("calc") }
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "🧮 CALC L_H",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF00FF66)
+                )
+            }
+        }
 
         // 2. Terminal Log Output Box
         Column(
@@ -196,6 +218,9 @@ fun ReplCalculatorTab(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                CalcSpecialPill("🧮 CALCULADORA", Color(0xFF00FF66)) {
+                    onExecuteCommand("calc")
+                }
                 CalcSpecialPill("⚡ H_A ⊕ H_B", Color(0xFF00FF66)) {
                     onExecuteCommand("sum H_A + H_B")
                 }

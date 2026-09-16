@@ -45,6 +45,7 @@ data class TopTuiUiState(
     val showAuthDialog: Boolean = false,
     val showGuideDialog: Boolean = false,
     val showArtemisDialog: Boolean = false,
+    val showCalculatorDialog: Boolean = false,
     val restApiUrl: String = "https://l13-brain-vps.internal",
     val wssApiUrl: String = "wss://l13-brain-vps.internal/ws",
     val statusMessage: String = "WSS: [CONNECTED 12ms]",
@@ -519,6 +520,10 @@ class TopTuiViewModel : ViewModel() {
 
     fun toggleArtemisDialog(show: Boolean) {
         _uiState.update { it.copy(showArtemisDialog = show) }
+    }
+
+    fun toggleCalculatorDialog(show: Boolean) {
+        _uiState.update { it.copy(showCalculatorDialog = show) }
     }
 
     fun executeArtemisInstruction(instruction: String) {
@@ -1005,6 +1010,10 @@ class TopTuiViewModel : ViewModel() {
             lower.startsWith("artemis") -> {
                 toggleArtemisDialog(true)
                 ">> Abriendo consola de control y automatización en dispositivo Google Artemis..."
+            }
+            lower.startsWith("calc") || lower.startsWith("calculadora") || lower.startsWith("pad") -> {
+                toggleCalculatorDialog(true)
+                ">> Abriendo Calculadora Hipergráfica y Espectral L13..."
             }
             lower.startsWith("auth") -> {
                 toggleAuthDialog(true)

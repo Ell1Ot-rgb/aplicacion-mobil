@@ -38,6 +38,7 @@ import com.example.l13brain.ui.L13ViewModel
 import com.example.l13brain.ui.TopTuiViewModel
 import com.example.l13brain.ui.components.AjustesTab
 import com.example.l13brain.ui.components.CrtShaderOverlay
+import com.example.l13brain.ui.components.HypergraphSpectralCalculatorDialog
 import com.example.l13brain.ui.components.ReplCalculatorTab
 import com.example.l13brain.ui.components.TelemetriaTensoresTab
 import com.example.l13brain.ui.components.TopHeader
@@ -64,12 +65,13 @@ fun TopTuiMainScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 1. Top Header with Title, Badges (Artemis, Guide) and 4 Navigation Tabs
+            // 1. Top Header with Title, Badges (Artemis, Calc, Guide) and 4 Navigation Tabs
             TopHeader(
                 selectedTab = selectedTabIndex,
                 onTabSelected = { selectedTabIndex = it },
                 onOpenArtemis = { topTuiViewModel.toggleArtemisDialog(true) },
                 onOpenGuide = { topTuiViewModel.toggleGuideDialog(true) },
+                onOpenCalculator = { topTuiViewModel.toggleCalculatorDialog(true) },
                 statusMessage = state.statusMessage,
                 tick = state.telemetry.totalTicks,
                 isPaused = state.isSimulationPaused
@@ -152,6 +154,17 @@ fun TopTuiMainScreen(
                 onDismiss = { topTuiViewModel.toggleArtemisDialog(false) },
                 onExecuteAction = { instruction ->
                     topTuiViewModel.executeArtemisInstruction(instruction)
+                }
+            )
+        }
+
+        // Hypergraph & Spectral Calculator Dialog (Screenshots 1, 2, 3, 5)
+        if (state.showCalculatorDialog) {
+            HypergraphSpectralCalculatorDialog(
+                telemetry = state.telemetry,
+                onDismiss = { topTuiViewModel.toggleCalculatorDialog(false) },
+                onExecuteCommand = { cmd ->
+                    topTuiViewModel.executeReplCommand(cmd)
                 }
             )
         }

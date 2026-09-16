@@ -3,6 +3,7 @@ package com.example.l13brain.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -55,7 +58,9 @@ fun ArtemisConsoleDialog(
                 .padding(14.dp)
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // 1. Header
@@ -164,30 +169,47 @@ fun ArtemisConsoleDialog(
                     )
                 }
 
-                // 5. Presets Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    val presets = listOf(
-                        Pair("Inyectar", "Inyecta 0.5J al nodo hub_central"),
-                        Pair("Reescribir", "Aplica reescritura DPO con regla Wolfram"),
-                        Pair("Diagnóstico", "Ejecuta diagnóstico topológico completo"),
-                        Pair("Snapshot", "Guarda snapshot del hipergrafo a Firestore")
+                // 5. Presets Row (Horizontally scrollable, full badges, no truncation)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = "PRESETS RÁPIDOS DE CONTROL ARTEMIS:",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 8.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF94A3B8)
                     )
-                    presets.forEach { (label, action) ->
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .border(1.dp, Color(0xFF16382B), RoundedCornerShape(4.dp))
-                                .background(Color(0xFF060D15), RoundedCornerShape(4.dp))
-                                .clickable {
-                                    promptText = action
-                                }
-                                .padding(vertical = 5.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(label, fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = Color(0xFF86EFAC), maxLines = 1)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val presets = listOf(
+                            Pair("⚡ Inyectar +0.5J", "Inyecta 0.5J al nodo hub_central"),
+                            Pair("🔄 Reescritura DPO", "Aplica reescritura DPO con regla Wolfram"),
+                            Pair("🩺 Diagnóstico AI", "Ejecuta diagnóstico topológico completo"),
+                            Pair("💾 Guardar Snapshot", "Guarda snapshot del hipergrafo a Firestore")
+                        )
+                        presets.forEach { (label, action) ->
+                            Box(
+                                modifier = Modifier
+                                    .border(1.dp, Color(0xFF16382B), RoundedCornerShape(4.dp))
+                                    .background(Color(0xFF060D15), RoundedCornerShape(4.dp))
+                                    .clickable {
+                                        promptText = action
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF86EFAC),
+                                    maxLines = 1
+                                )
+                            }
                         }
                     }
                 }

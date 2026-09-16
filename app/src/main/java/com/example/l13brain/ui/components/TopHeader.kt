@@ -32,6 +32,7 @@ fun TopHeader(
     onTabSelected: (Int) -> Unit,
     onOpenArtemis: () -> Unit,
     onOpenGuide: () -> Unit,
+    onOpenCalculator: () -> Unit = {},
     statusMessage: String = "WSS: [CONNECTED 12ms]",
     tick: Long = 248L,
     isPaused: Boolean = false,
@@ -107,6 +108,24 @@ fun TopHeader(
                         fontSize = 9.5.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF00E5FF)
+                    )
+                }
+
+                // Calculator Badge Button
+                Box(
+                    modifier = Modifier
+                        .border(1.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp))
+                        .background(Color(0xFF072116), RoundedCornerShape(4.dp))
+                        .clickable { onOpenCalculator() }
+                        .padding(horizontal = 6.dp, vertical = 2.5.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🧮 CALC",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF00FF66)
                     )
                 }
 
