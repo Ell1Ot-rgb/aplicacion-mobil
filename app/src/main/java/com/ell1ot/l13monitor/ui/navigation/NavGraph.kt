@@ -33,6 +33,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ell1ot.l13monitor.ui.control.ControlScreen
 import com.ell1ot.l13monitor.ui.dashboard.DashboardScreen
+import com.ell1ot.l13monitor.ui.history.HistoryScreen
+import com.ell1ot.l13monitor.ui.settings.SettingsScreen
 import com.example.l13brain.ui.L13ViewModel
 import com.example.l13brain.ui.TopTuiViewModel
 import com.example.l13brain.ui.screens.TopTuiMainScreen
@@ -41,6 +43,8 @@ enum class Route(val path: String, val label: String, val channel: String) {
     TOPTUI("toptui", "TOPOSCOPIO", "CH1"),
     CONTROL("control", "CONTROL HW", "CH2"),
     DASHBOARD("dashboard", "MÉTRICAS", "CH3"),
+    HISTORY("history", "HISTORIAL", "CH4"),
+    SETTINGS("settings", "AJUSTES", "CH5"),
 }
 
 @Composable
@@ -84,6 +88,8 @@ fun AppNavHost() {
                             Route.TOPTUI -> Color(0xFF00FF66)
                             Route.CONTROL -> Color(0xFF00E5FF)
                             Route.DASHBOARD -> Color(0xFFFFB300)
+                            Route.HISTORY -> Color(0xFFBA68C8)
+                            Route.SETTINGS -> Color(0xFF90A4AE)
                         }
 
                         Box(
@@ -162,6 +168,9 @@ fun AppNavHost() {
             }
             composable(Route.DASHBOARD.path) { DashboardScreen() }
             composable(Route.CONTROL.path) { ControlScreen() }
+            // v3 fix (audit #2023): screens existían pero no estaban en la nav.
+            composable(Route.HISTORY.path) { HistoryScreen() }
+            composable(Route.SETTINGS.path) { SettingsScreen() }
         }
     }
 }

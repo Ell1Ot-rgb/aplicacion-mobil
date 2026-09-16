@@ -14,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.CertificatePinner
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -48,14 +49,26 @@ object AppModule {
             .readTimeout(30, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .addInterceptor { chain ->
+                // v3 fix (audit #2023): resolve base URL per request from
+                // CredentialsRepository and only attach Bearer to that host.
                 val original = chain.request()
-                val token = credentials.bearerToken
-                val req = if (!token.isNullOrBlank()) {
-                    original.newBuilder()
-                        .addHeader("Authorization", "Bearer $token")
+                val dynamicBase = credentials.baseUrl
+                var newUrl = original.url
+                val parsed = dynamicBase.toHttpUrlOrNull()
+                if (parsed != null) {
+                    newUrl = original.url.newBuilder()
+                        .scheme(parsed.scheme)
+                        .host(parsed.host)
+                        .port(parsed.port)
                         .build()
-                } else original
-                chain.proceed(req)
+                }
+                val token = credentials.bearerToken
+                val targetHost = parsed?.host
+                val builder = original.newBuilder().url(newUrl)
+                if (!token.isNullOrBlank() && targetHost != null && newUrl.host == targetHost) {
+                    builder.addHeader("Authorization", "Bearer $token")
+                }
+                chain.proceed(builder.build())
             }
             .addInterceptor(logging)
 
@@ -89,7 +102,9 @@ object AppModule {
         credentials: CredentialsRepository,
         json: Json,
     ): Retrofit = Retrofit.Builder()
-        .baseUrl(credentials.baseUrl.ensureTrailingSlash())
+        // v3 fix: static fallback only; real base URL is rewritten
+        // per request by the interceptor above.
+        .baseUrl(BuildConfig.L13_BASE_URL + "/")
         .client(client)
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
@@ -120,7 +135,7 @@ object AppModule {
         context,
         AppDatabase::class.java,
         "l13.db",
-    ).fallbackToDestructiveMigration().build()
+    ).build() // v3 fix: no destructive fallback migration
 
     @Provides fun provideCycleDao(db: AppDatabase) = db.cycleDao()
     @Provides fun provideCommandLogDao(db: AppDatabase) = db.commandLogDao()
