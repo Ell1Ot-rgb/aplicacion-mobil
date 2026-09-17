@@ -422,14 +422,17 @@ data class PersistentDynamicHypergraph(
                     matrix[k][p] = c * akp - s * akq
                     matrix[p][k] = matrix[k][p]
                     matrix[k][q] = s * akp + c * akq
-                    matrix[q][k] = matrix[q][q]
+                    // FIX(v3 audit): mirror entry must copy matrix[k][q], not the
+                    // diagonal; the previous assignment broke the symmetric rotation.
+                    matrix[q][k] = matrix[k][q]
                 }
             }
         }
 
         val evals = FloatArray(n) { matrix[it][it].coerceAtLeast(0.0f) }
         evals.sort()
-        evals[0] = 0.0f
+        // Do NOT force evals[0]=0: multiplicity of the zero eigenvalue equals
+        // the number of connected components; forcing it falsified spectra.
         return evals
     }
 

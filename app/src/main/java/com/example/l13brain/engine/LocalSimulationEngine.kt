@@ -14,6 +14,12 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+// ============================================================
+// LAB-ONLY: local physics/topology sandbox. This engine does NOT read from
+// the Heroku dyno or any remote source; every value it produces is a local
+// simulation. UI feeding from this engine must display a LAB badge.
+// Audit #2023: the engine was silently presented as "live L13 data".
+// ============================================================
 class LocalSimulationEngine {
 
     val nodes = mutableListOf<HyperNode>()

@@ -26,13 +26,18 @@ data class HypergraphSnapshotRecord(
     val notes: String = ""
 )
 
+// ============================================================
+// LAB-ONLY, NOT REAL FIREBASE. Hardcoded stubs (LAB only); no credentials or
+// network calls exist. This class exists only to model the UI shapes.
+// Audit #2023: presenting this as real auth misled users.
+// ============================================================
 class FirebaseAuthManager {
 
     private val _currentUser = MutableStateFlow<UserProfile?>(
         UserProfile(
-            uid = "usr_l13_guest_8921",
-            email = "rubi123lucia@gmail.com",
-            displayName = "Rubi Lucia (L13 Lead)",
+            uid = "usr_lab_local",
+            email = "lab@local.invalid",
+            displayName = "LAB Guest (simulation)",
             photoUrl = null,
             isAnonymous = false,
             firestoreSyncEnabled = true
@@ -66,7 +71,7 @@ class FirebaseAuthManager {
     )
     val savedSnapshots: StateFlow<List<HypergraphSnapshotRecord>> = _savedSnapshots.asStateFlow()
 
-    fun signInWithGoogle(email: String = "rubi123lucia@gmail.com", name: String = "Rubi Lucia"): String {
+    fun signInWithGoogle(email: String = "lab@local.invalid", name: String = "LAB Guest"): String {
         _currentUser.value = UserProfile(
             uid = "google_auth_${System.currentTimeMillis()}",
             email = email,

@@ -7,6 +7,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -23,9 +24,23 @@ class CommandBus @Inject constructor(
     private val _acks = MutableSharedFlow<CommandLogEntity>(extraBufferCapacity = 64)
     val acks: SharedFlow<CommandLogEntity> = _acks
 
-    /** Fire-and-forget: persists, attempts with retries, records final result. */
-    fun enqueue(command: L13Command) {
+    // v3 fix (audit #2023): real FIFO. Single channel consumed sequentially; the
+    // old scope.launch-per-command let retries of cmd A interleave with cmd B,
+    // so ACK order was NOT the FIFO order the class comment claimed.
+    private val queue = Channel<L13Command>(capacity = 64)
+
+    init {
         scope.launch {
+            for (command in queue) processCommand(command)
+        }
+    }
+
+    /** Enqueue into the FIFO pump; trySend applies backpressure when full. */
+    fun enqueue(command: L13Command) {
+        queue.trySend(command)
+    }
+
+    private suspend fun processCommand(command: L13Command) {
             val log = CommandLogEntity(
                 cmdId = command.cmdId,
                 kind = command::class.simpleName ?: "unknown",
@@ -76,7 +91,6 @@ class CommandBus @Inject constructor(
                     settledAtMillis = System.currentTimeMillis(),
                 ),
             )
-        }
     }
 
     private fun L13Command.toPayloadString(): String = when (this) {

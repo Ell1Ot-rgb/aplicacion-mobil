@@ -44,3 +44,33 @@ di/          AppModule (OkHttp con pinning a herokuapp.com en release)
 | Módulo | Descripción |
 |---|---|
 | `:app` | Aplicación única `com.ell1ot.l13monitor` |
+
+## Estado post-auditoría técnica (rama fix/v3-fase-build)
+
+Correcciones aplicadas sobre `decfd54`:
+
+1. **Matemáticas (fix/math):** Jacobi corregido en `PersistentHypergraphCalculator`;
+   espectro calculado desde el Laplaciano real (sin evals forzados a 0); barcodes/Betti
+   ya no muestran literales inventados — cuando no hay cómputo real la UI dice `NA`;
+   el diálogo de "Calculadora Espectral" ahora calcula el espectro del Laplaciano del
+   hipergrafo vivo y el REPL es una calculadora aritmética honesta (sin corrupción de
+   notación científica ni resultados fabricados). Osciloscopio HGS-9500 etiquetado
+   como señal **SINTÉTICA (LAB)**.
+2. **Runtime/datos (fix/data):** `CommandBus` es FIFO real (Channel + pump secuencial);
+   `HolographicVsa` reconstruye `superPosition` al expulsar vectores (olvido correcto);
+   Room: `onUpgrade` sin DROP y sin `fallbackToDestructiveMigration`; clientes LEGACY
+   (`L13ApiClient`) apuntan a la URL Heroku real y reportan modo LAB cuando el fallo;
+   credenciales personales hardcodeadas removidas.
+3. **Infra (fix/infrastructure):** rutas HISTORY/SETTINGS montadas en NavGraph (antes
+   inalcanzables); interceptor OkHttp reescribe host/esquema por request según
+   `CredentialsRepository` (URL base ya no queda congelada) y solo adjunta el Bearer
+   token al host L13 configurado.
+4. **Build (build/fix):** `gradlew` + wrapper 8.9 añadidos; heap del daemon ajustado
+   a entornos chicos (`-Xmx2048m`). `assembleDebug` genera `app-debug.apk`
+   (verificado en linux-aarch64 con aapt2 bajo qemu-user: ver abajo).
+
+### Build en hosts ARM64 Linux
+
+`aapt2` se distribuye sólo para linux-x86_64; en arm64 (p. ej. AWS Graviton) instalar
+qemu-user y registrar binfmt para x86_64 con una sysroot glibc mínima en
+`QEMU_LD_PREFIX`. En x86_64 o con Android Studio no hace falta nada.

@@ -74,7 +74,8 @@ private data class ProjectedSimplexFace(
 )
 
 /**
- * HGS-9500DPO: Real-Time Persistent Hypergraph Oscilloscope (Industrial Metrology Grade).
+ * HGS-9500DPO: LAB-only synthetic hypergraph oscilloscope (audit #2023, v3).
+ * NOT real-time, NOT instrument grade: all traces/barcodes are local simulations.
  * Full-width, ultra-detailed 3D Volumetric Hypergraph Viewport matching the user's reference image:
  * - Direct in-screen header with 10 GSa/s FastAcq & TRIG'D OSD
  * - Large, prominent translucent simplicial facets (2-simplices & 3-simplices) with depth-sorted transparency
@@ -983,7 +984,7 @@ fun Hgs9500DpoOscilloscope(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("TDA HOMOLOGY PERSISTENCE BARCODE (VIETORIS-RIPS)", fontFamily = FontFamily.Monospace, fontSize = 7.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E5FF))
+                            Text("TDA BARCODE — DATOS SINTÉTICOS LAB (no Vietoris-Rips, auditoría #2023)", fontFamily = FontFamily.Monospace, fontSize = 7.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E5FF))
                             Text("ε = ${String.format(java.util.Locale.US, "%.2f", filtrationEps)}", fontFamily = FontFamily.Monospace, fontSize = 7.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFB300))
                         }
                         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
@@ -1074,8 +1075,8 @@ fun Hgs9500DpoOscilloscope(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("MATH FFT MAG (dBV) - HANNING WINDOWED [χ FLUX]", fontFamily = FontFamily.Monospace, fontSize = 7.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFF007F))
-                            Text("ENOB: 11.4b | SINAD: 70.4dB", fontFamily = FontFamily.Monospace, fontSize = 6.5.sp, color = Color(0xFF7E93A8))
+                            Text("FFT SINTÉTICA LAB (no derivada de muestras reales)", fontFamily = FontFamily.Monospace, fontSize = 7.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFF007F))
+                            Text("MÉTRICAS: NA — instrumento sintético (LAB)", fontFamily = FontFamily.Monospace, fontSize = 6.5.sp, color = Color(0xFF7E93A8))
                         }
                         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
                             Canvas(modifier = Modifier.fillMaxSize()) {

@@ -12,7 +12,7 @@ class L13CycleDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NA
 
     companion object {
         const val DATABASE_NAME = "l13_brain.db"
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
 
         const val TABLE_CYCLES = "l13_cycles"
         const val COL_CYCLE = "cycle"
@@ -55,9 +55,10 @@ class L13CycleDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NA
         db.execSQL(createSql)
     }
 
+    // v3 fix (audit #2023): never DROP user data on upgrade. Migrations stay
+    // additive; existing rows are preserved across every version change.
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_CYCLES")
-        onCreate(db)
+        // v1 -> v2: identical schema. Intentionally a no-op that preserves rows.
     }
 
     fun insertOrUpdateCycle(record: L13CycleRecord) {
@@ -83,6 +84,7 @@ class L13CycleDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NA
     }
 
     fun getAllCycles(limit: Int = 100): List<L13CycleRecord> {
+        val safeLimit = limit.coerceIn(1, 1000) // v3 fix: bound SQL LIMIT, no injection/misuse
         val db = readableDatabase
         val list = mutableListOf<L13CycleRecord>()
         val cursor = db.query(
@@ -93,7 +95,7 @@ class L13CycleDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NA
             null,
             null,
             "$COL_CYCLE DESC",
-            limit.toString()
+            safeLimit.toString()
         )
 
         cursor.use { c ->
