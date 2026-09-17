@@ -20,7 +20,7 @@ import kotlin.math.sin
 class L13ViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = L13Repository(application)
-    private var processor = L13UnifiedProcessor()
+    private var processor = L13UnifiedProcessor.shared
 
     val history = repository.historyFlow
 

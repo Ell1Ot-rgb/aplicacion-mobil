@@ -96,6 +96,8 @@ class DashboardViewModel @Inject constructor(
                 "OFFLINE [HÍBRIDO LOCAL ACTIVO]"
             }
 
+            repo.refreshLastCycle()
+
             _state.update {
                 it.copy(
                     loading = false,
@@ -103,7 +105,6 @@ class DashboardViewModel @Inject constructor(
                     statusText = statusLabel,
                 )
             }
-            repo.refreshLastCycle()
         }
     }
 }

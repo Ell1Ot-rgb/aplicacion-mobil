@@ -16,6 +16,10 @@ class L13UnifiedProcessor(
     val fusedDim: Int = 128,
     val vsaDim: Int = 2048
 ) {
+    companion object {
+        val shared = L13UnifiedProcessor()
+    }
+
     val hypergraph = HypergraphBuilder(embeddingDim = 256, maxHistory = 100, simThresh = 0.80, pcaK = 4, pcaWarmup = 10)
     val topoBridge = TopologicalFeedbackBridge(maxNodes = 30)
     val fusion = FusionBridge(embedDim)

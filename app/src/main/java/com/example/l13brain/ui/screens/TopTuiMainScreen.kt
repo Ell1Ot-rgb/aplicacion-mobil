@@ -131,10 +131,18 @@ fun TopTuiMainScreen(
                 3 -> {
                     // TAB 3: ⚙️ AJUSTES (Screenshot 8)
                     AjustesTab(
+                        shaderConfig = state.shaderConfig,
+                        physicsConfig = state.physicsConfig,
+                        selectedNode = state.nodes.find { it.id == state.selectedNodeId },
+                        onShaderConfigChange = { topTuiViewModel.updateShaderConfig(it) },
+                        onPhysicsConfigChange = { topTuiViewModel.updatePhysicsConfig(it) },
+                        onInjectEnergyToNode = { id, amount -> topTuiViewModel.injectEnergyToNode(id, amount) },
+                        onResetNodePhase = { id -> topTuiViewModel.resetNodePhase(id) },
                         onExportPng = { topTuiViewModel.executeReplCommand("export --png") },
                         onSyncApi = { topTuiViewModel.toggleEndpointDialog(true) },
                         onDumpJson = { topTuiViewModel.executeReplCommand("dump --json") },
-                        onGeminiDiagnosis = { topTuiViewModel.runAiDiagnosis() }
+                        onGeminiDiagnosis = { topTuiViewModel.runAiDiagnosis() },
+                        latestDiagnosis = state.latestDiagnosis
                     )
                 }
             }

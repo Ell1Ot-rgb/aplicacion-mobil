@@ -44,9 +44,10 @@ object AppModule {
             level = HttpLoggingInterceptor.Level.BASIC
         }
         val builder = OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .retryOnConnectionFailure(true)
+            .connectTimeout(3, TimeUnit.SECONDS)
+            .readTimeout(5, TimeUnit.SECONDS)
+            .writeTimeout(5, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(false)
             .addInterceptor { chain ->
                 val original = chain.request()
                 val token = credentials.bearerToken
@@ -76,10 +77,21 @@ object AppModule {
     @Singleton
     @Named("Heroku")
     fun provideHerokuOkHttp(): OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .retryOnConnectionFailure(true)
+        .connectTimeout(3, TimeUnit.SECONDS)
+        .readTimeout(5, TimeUnit.SECONDS)
+        .writeTimeout(5, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(false)
         .build()
+
+    @Provides
+    @Singleton
+    fun provideLocalSimulationEngine(): com.example.l13brain.engine.LocalSimulationEngine =
+        com.example.l13brain.engine.LocalSimulationEngine.shared
+
+    @Provides
+    @Singleton
+    fun provideL13UnifiedProcessor(): com.example.l13brain.core.L13UnifiedProcessor =
+        com.example.l13brain.core.L13UnifiedProcessor.shared
 
     @Provides
     @Singleton

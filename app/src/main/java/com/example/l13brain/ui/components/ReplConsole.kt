@@ -74,6 +74,14 @@ fun ReplCalculatorTab(
     var activeMathBottomTab by remember { mutableIntStateOf(0) }
     var selectedNodeName by remember { mutableStateOf(selectedNodeId ?: "s_optico") }
 
+    androidx.compose.runtime.LaunchedEffect(selectedNodeId) {
+        selectedNodeId?.let { id ->
+            nodes.find { it.id == id || it.label.contains(id, ignoreCase = true) }?.let {
+                selectedNodeName = it.label
+            }
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -177,6 +185,18 @@ fun ReplCalculatorTab(
                         color = Color(0xFF00FF66)
                     ),
                     cursorBrush = SolidColor(Color(0xFF00FF66)),
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                    ),
+                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                        onDone = {
+                            if (commandInput.isNotBlank()) {
+                                onExecuteCommand(commandInput)
+                                commandInput = ""
+                            }
+                        }
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
             }

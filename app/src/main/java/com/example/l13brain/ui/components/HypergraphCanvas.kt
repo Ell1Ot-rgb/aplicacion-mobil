@@ -552,6 +552,7 @@ fun HypergraphCanvas(
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val currentNodesState = androidx.compose.runtime.rememberUpdatedState(nodes)
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.4f,
         targetValue = 1.0f,
@@ -565,11 +566,12 @@ fun HypergraphCanvas(
     Canvas(
         modifier = modifier
             .fillMaxSize()
-            .pointerInput(nodes) {
+            .pointerInput(Unit) {
                 detectTapGestures { tapOffset ->
                     val width = size.width.toFloat()
                     val height = size.height.toFloat()
-                    for (node in nodes) {
+                    val activeNodes = currentNodesState.value
+                    for (node in activeNodes) {
                         val nx = node.x * width
                         val ny = node.y * height
                         val dist = sqrt((tapOffset.x - nx) * (tapOffset.x - nx) + (tapOffset.y - ny) * (tapOffset.y - ny))
@@ -580,13 +582,14 @@ fun HypergraphCanvas(
                     }
                 }
             }
-            .pointerInput(nodes) {
+            .pointerInput(Unit) {
                 var draggedNodeId: String? = null
                 detectDragGestures(
                     onDragStart = { startOffset ->
                         val width = size.width.toFloat()
                         val height = size.height.toFloat()
-                        for (node in nodes) {
+                        val activeNodes = currentNodesState.value
+                        for (node in activeNodes) {
                             val nx = node.x * width
                             val ny = node.y * height
                             val dist = sqrt((startOffset.x - nx) * (startOffset.x - nx) + (startOffset.y - ny) * (startOffset.y - ny))
@@ -601,14 +604,15 @@ fun HypergraphCanvas(
                         draggedNodeId?.let { id ->
                             val width = size.width.toFloat()
                             val height = size.height.toFloat()
-                            val node = nodes.find { it.id == id }
+                            val activeNodes = currentNodesState.value
+                            val node = activeNodes.find { it.id == id }
                             if (node != null && width > 0 && height > 0) {
                                 val newX = (node.x + dragAmount.x / width).coerceIn(0.06f, 0.94f)
                                 val newY = (node.y + dragAmount.y / height).coerceIn(0.08f, 0.92f)
                                 onNodeDragged(id, newX, newY)
                             }
+                            change.consume()
                         }
-                        change.consume()
                     },
                     onDragEnd = { draggedNodeId = null },
                     onDragCancel = { draggedNodeId = null }
@@ -896,7 +900,7 @@ private fun DrawScope.drawTopNodes(
                 pos = Offset(cx, cy),
                 color = color,
                 isStar = isHub,
-                isSelected = (node.id == selectedNodeId)
+                isSelected = (node.id == selectedNodeId || (selectedNodeId?.contains("v3") == true && node.id.contains("v3")) || (selectedNodeId?.contains("hub") == true && node.id.contains("hub")))
             )
         }
     } else {

@@ -16,11 +16,19 @@ import kotlin.math.sqrt
 
 class LocalSimulationEngine {
 
+    companion object {
+        val shared = LocalSimulationEngine()
+    }
+
     val nodes = mutableListOf<HyperNode>()
     val hyperedges = mutableListOf<HyperEdge>()
     val processes = mutableListOf<ProcessInfo>()
     var telemetry = TelemetryState()
     var physicsConfig = PhysicsConfig()
+    var decayTau: Float = 0.35f
+        set(value) {
+            field = value.coerceIn(0.01f, 5.0f)
+        }
 
     private val rng = Random(42)
     private var tickCount = 89420L
@@ -55,6 +63,10 @@ class LocalSimulationEngine {
     }
 
     @Synchronized
+    fun resetSimulation() {
+        resetToDefaultMockupState()
+    }
+
     fun resetToDefaultMockupState() {
         nodes.clear()
         hyperedges.clear()
@@ -321,7 +333,7 @@ class LocalSimulationEngine {
             }
 
             // Digital Phosphor Relaxation Time Constant: tau(f_e) = tau_0 * (1.0 + 4.5 * f_e^1.4)
-            val tau = 0.060f * (1.0f + 4.8f * (edge.participationFreq * edge.participationFreq))
+            val tau = (decayTau * 0.17f).coerceIn(0.01f, 1.0f) * (1.0f + 4.8f * (edge.participationFreq * edge.participationFreq))
             val exponentialDecay = exp(-dpoDt / tau)
 
             // L_e(t + dt) = L_e(t) * exp(-dt / tau(f_e))
@@ -400,10 +412,13 @@ class LocalSimulationEngine {
     }
 
     fun injectEnergy(nodeId: String, amount: Float, diffuse: Boolean = true): String {
-        val target = nodes.find { it.id == nodeId || it.label.contains(nodeId, ignoreCase = true) }
-            ?: return "ERROR: Node '$nodeId' not found."
+        val target = nodes.find { 
+            it.id == nodeId || 
+            it.label.contains(nodeId, ignoreCase = true) || 
+            (nodeId.contains("hub", ignoreCase = true) && it.id.contains("hub", ignoreCase = true)) 
+        } ?: nodes.firstOrNull() ?: return "ERROR: Node '$nodeId' not found."
 
-        target.energy = (target.energy + amount).coerceIn(0.1f, 1.0f)
+        target.energy = (target.energy + amount).coerceIn(0.05f, 5.0f)
 
         if (diffuse) {
             for (edge in hyperedges) {
@@ -412,14 +427,14 @@ class LocalSimulationEngine {
                         if (nid != target.id) {
                             val neighbor = nodes.find { it.id == nid }
                             neighbor?.let {
-                                it.energy = (it.energy + amount * 0.35f * edge.weight).coerceIn(0.1f, 1.0f)
+                                it.energy = (it.energy + amount * 0.35f * edge.weight).coerceIn(0.05f, 5.0f)
                             }
                         }
                     }
                 }
             }
         }
-        return "Estímulo +${String.format("%.2f", amount)}J inyectado en ${target.label}. Difusión Laplaciana completada."
+        return "Estímulo +${String.format(java.util.Locale.US, "%.2f", amount)}J inyectado en ${target.label}. Difusión Laplaciana completada."
     }
 
     fun mutateWolframRule(pattern: String, substitute: String, weight: Float, anneal: Float): String {
@@ -439,7 +454,7 @@ class LocalSimulationEngine {
 
         for (nid in activeNodes) {
             nodes.find { it.id == nid }?.let {
-                it.energy = (it.energy + 0.15f).coerceIn(0.1f, 1.0f)
+                it.energy = (it.energy + 0.15f).coerceIn(0.05f, 5.0f)
             }
         }
 

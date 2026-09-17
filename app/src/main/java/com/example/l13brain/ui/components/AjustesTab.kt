@@ -27,19 +27,30 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.l13brain.model.HyperNode
+import com.example.l13brain.model.PhysicsConfig
+import com.example.l13brain.model.ShaderConfig
 
 @Composable
 fun AjustesTab(
+    shaderConfig: ShaderConfig = ShaderConfig(),
+    physicsConfig: PhysicsConfig = PhysicsConfig(),
+    selectedNode: HyperNode? = null,
+    onShaderConfigChange: (ShaderConfig) -> Unit = {},
+    onPhysicsConfigChange: (PhysicsConfig) -> Unit = {},
+    onInjectEnergyToNode: (String, Float) -> Unit = { _, _ -> },
+    onResetNodePhase: (String) -> Unit = {},
     onExportPng: () -> Unit,
     onSyncApi: () -> Unit,
     onDumpJson: () -> Unit,
     onGeminiDiagnosis: () -> Unit,
+    latestDiagnosis: String? = null,
     modifier: Modifier = Modifier
 ) {
-    var scanlines by remember { mutableFloatStateOf(0.80f) }
-    var curvature by remember { mutableFloatStateOf(0.40f) }
-    var coulombKr by remember { mutableFloatStateOf(120f) }
-    var hookeKa by remember { mutableFloatStateOf(0.045f) }
+    var scanlines by remember(shaderConfig.scanlineDensity) { mutableFloatStateOf(shaderConfig.scanlineDensity) }
+    var curvature by remember(shaderConfig.barrelCurvature) { mutableFloatStateOf(shaderConfig.barrelCurvature) }
+    var coulombKr by remember(physicsConfig.coulombRepulsionKr) { mutableFloatStateOf(physicsConfig.coulombRepulsionKr) }
+    var hookeKa by remember(physicsConfig.hookeSpringKa) { mutableFloatStateOf(physicsConfig.hookeSpringKa) }
 
     Column(
         modifier = modifier
@@ -58,12 +69,88 @@ fun AjustesTab(
             color = Color(0xFF00FF66)
         )
 
-        Text(
-            text = "Toca un nodo en el canvas para inspeccionar.",
-            fontFamily = FontFamily.Monospace,
-            fontSize = 9.sp,
-            color = Color(0xFF5B786D)
-        )
+        if (selectedNode != null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF07141E), RoundedCornerShape(6.dp))
+                    .border(1.dp, Color(0xFF00E5FF), RoundedCornerShape(6.dp))
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "● NODO SELECCIONADO: ${selectedNode.label}",
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp,
+                        color = Color(0xFF00E5FF)
+                    )
+                    Text(
+                        text = "ID: ${selectedNode.id}",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.sp,
+                        color = Color(0xFFFFB300)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "ENERGÍA: ${String.format(java.util.Locale.US, "%.2f", selectedNode.energy)} J",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.sp,
+                        color = Color(0xFF00FF66)
+                    )
+                    Text(
+                        text = "FASE θ: ${String.format(java.util.Locale.US, "%.2f", selectedNode.phase)} rad",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 9.sp,
+                        color = Color(0xFFE2E8F0)
+                    )
+                }
+
+                Text(
+                    text = "ESTADO S4: ${selectedNode.modalState} | POS: (${String.format(java.util.Locale.US, "%.2f", selectedNode.x)}, ${String.format(java.util.Locale.US, "%.2f", selectedNode.y)})",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.5.sp,
+                    color = Color(0xFF94A3B8)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    InspectorButton(
+                        label = "⚡ +0.50J",
+                        color = Color(0xFF00FF66),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        onInjectEnergyToNode(selectedNode.id, 0.50f)
+                    }
+                    InspectorButton(
+                        label = "🔄 Reset Fase",
+                        color = Color(0xFF00E5FF),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        onResetNodePhase(selectedNode.id)
+                    }
+                }
+            }
+        } else {
+            Text(
+                text = "Toca cualquier nodo en el Toposcopio (CH1) para calibrar sus parámetros.",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 9.sp,
+                color = Color(0xFF5B786D)
+            )
+        }
 
         // Section: SHADER CONTROLS (CRT)
         Text(
@@ -84,7 +171,10 @@ fun AjustesTab(
             }
             Slider(
                 value = scanlines,
-                onValueChange = { scanlines = it },
+                onValueChange = {
+                    scanlines = it
+                    onShaderConfigChange(shaderConfig.copy(scanlineDensity = it))
+                },
                 colors = SliderDefaults.colors(
                     thumbColor = Color(0xFF00FF66),
                     activeTrackColor = Color(0xFF00FF66),
@@ -105,7 +195,10 @@ fun AjustesTab(
             }
             Slider(
                 value = curvature,
-                onValueChange = { curvature = it },
+                onValueChange = {
+                    curvature = it
+                    onShaderConfigChange(shaderConfig.copy(barrelCurvature = it))
+                },
                 colors = SliderDefaults.colors(
                     thumbColor = Color(0xFF00FF66),
                     activeTrackColor = Color(0xFF00FF66),
@@ -133,7 +226,10 @@ fun AjustesTab(
             }
             Slider(
                 value = coulombKr,
-                onValueChange = { coulombKr = it },
+                onValueChange = {
+                    coulombKr = it
+                    onPhysicsConfigChange(physicsConfig.copy(coulombRepulsionKr = it))
+                },
                 valueRange = 20f..300f,
                 colors = SliderDefaults.colors(
                     thumbColor = Color(0xFF00FF66),
@@ -154,7 +250,10 @@ fun AjustesTab(
             }
             Slider(
                 value = hookeKa,
-                onValueChange = { hookeKa = it },
+                onValueChange = {
+                    hookeKa = it
+                    onPhysicsConfigChange(physicsConfig.copy(hookeSpringKa = it))
+                },
                 valueRange = 0.01f..0.20f,
                 colors = SliderDefaults.colors(
                     thumbColor = Color(0xFF00FF66),
@@ -201,6 +300,31 @@ fun AjustesTab(
                 fontSize = 12.sp,
                 color = Color.Black
             )
+        }
+
+        if (latestDiagnosis != null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF061412), RoundedCornerShape(6.dp))
+                    .border(1.dp, Color(0xFF00FF66), RoundedCornerShape(6.dp))
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "🤖 INFORME DE DIAGNÓSTICO GEMINI AI:",
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 9.5.sp,
+                    color = Color(0xFF00FF66)
+                )
+                Text(
+                    text = latestDiagnosis,
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 8.5.sp,
+                    color = Color(0xFFD1FAE5)
+                )
+            }
         }
     }
 }

@@ -69,12 +69,13 @@ data class TopTuiUiState(
         PersistenceBarcodeInterval(1, "H₁ [Ciclo 1D {v₁, v₃, v₄, v₆}]", 0.50f, 1.20f, "e4_holografica"),
         PersistenceBarcodeInterval(1, "H₁ [Cavidad Homológica Persistente]", 0.85f, 1.70f, "Complejo K(H)"),
         PersistenceBarcodeInterval(2, "H₂ [Cavidad Tetraédrica k=4]", 0.85f, 2.10f, "e3 ∪ e4")
-    )
+    ),
+    val latestDiagnosis: String? = null
 )
 
 class TopTuiViewModel : ViewModel() {
 
-    private val localEngine = LocalSimulationEngine()
+    private val localEngine = LocalSimulationEngine.shared
     private val apiClient = L13ApiClient(localEngine)
     private val geminiClassifier = GeminiClassifier()
     private val authManager = FirebaseAuthManager()
@@ -86,7 +87,7 @@ class TopTuiViewModel : ViewModel() {
             hyperedges = localEngine.hyperedges.toList(),
             processes = localEngine.processes.toList(),
             telemetry = localEngine.telemetry,
-            selectedNodeId = "v3",
+            selectedNodeId = "v3_hub_bridge",
             currentUser = authManager.currentUser.value,
             savedSnapshots = authManager.savedSnapshots.value,
             replLogs = listOf(
@@ -1040,8 +1041,10 @@ class TopTuiViewModel : ViewModel() {
 
     fun runAiDiagnosis() {
         viewModelScope.launch {
+            _uiState.update { it.copy(statusMessage = "ONTI-DIAGNÓSTICO GEMINI EN CURSO...") }
             addLog(true, "classify --target=active_cluster --semantic=gemini")
             val diagnosis = geminiClassifier.classifyAndDiagnose(localEngine.nodes, localEngine.telemetry)
+            _uiState.update { it.copy(latestDiagnosis = diagnosis, statusMessage = "DIAGNÓSTICO GEMINI OK") }
             addLog(false, diagnosis)
         }
     }
