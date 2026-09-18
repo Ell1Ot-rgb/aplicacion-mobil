@@ -44,6 +44,15 @@ import com.example.l13brain.ui.components.TelemetriaTensoresTab
 import com.example.l13brain.ui.components.TopHeader
 import com.example.l13brain.ui.components.ToposcopioGrafoTab
 
+import com.example.l13brain.ui.theme.CalcChassis
+import com.example.l13brain.ui.theme.CalcBezel
+import com.example.l13brain.ui.theme.CalcPlotY1
+import com.example.l13brain.ui.theme.CalcPlotY2
+import com.example.l13brain.ui.theme.CalcPlotY3
+import com.example.l13brain.ui.theme.CalcKeyEnterBg
+import com.example.l13brain.ui.theme.CalcKeyEnterText
+import com.example.l13brain.ui.theme.CalcLcdText
+
 @Composable
 fun TopTuiMainScreen(
     topTuiViewModel: TopTuiViewModel,
@@ -56,7 +65,7 @@ fun TopTuiMainScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF03070E))
+            .background(CalcChassis)
     ) {
         Column(
             modifier = Modifier
@@ -209,25 +218,25 @@ fun EndpointsConfigDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("CONFIGURACIÓN DE CONEXIÓN", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = Color(0xFF00FF66))
+            Text("CONFIGURACIÓN DE CONEXIÓN", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = CalcPlotY1)
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Ajusta los endpoints REST y WebSocket del VPS o Heroku Dyno:", fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Color.White)
+                Text("Ajusta los endpoints REST y WebSocket del VPS o Heroku Dyno:", fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = CalcLcdText)
 
                 OutlinedTextField(
                     value = rest,
                     onValueChange = { rest = it },
-                    label = { Text("URL REST (HTTPS / HTTP)", fontSize = 10.sp) },
-                    textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Color.White),
+                    label = { Text("URL REST (HTTPS / HTTP)", fontSize = 10.sp, color = CalcPlotY1) },
+                    textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = CalcLcdText),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
                     value = wss,
                     onValueChange = { wss = it },
-                    label = { Text("URL WebSocket (WSS / WS)", fontSize = 10.sp) },
-                    textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = Color.White),
+                    label = { Text("URL WebSocket (WSS / WS)", fontSize = 10.sp, color = CalcPlotY1) },
+                    textStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = CalcLcdText),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -235,9 +244,9 @@ fun EndpointsConfigDialog(
         confirmButton = {
             ElevatedButton(
                 onClick = { onSave(rest, wss) },
-                colors = ButtonDefaults.elevatedButtonColors(containerColor = Color(0xFF0A3A28), contentColor = Color(0xFF00FF66))
+                colors = ButtonDefaults.elevatedButtonColors(containerColor = CalcKeyEnterBg, contentColor = CalcKeyEnterText)
             ) {
-                Text("Guardar y Conectar", fontFamily = FontFamily.Monospace)
+                Text("Guardar y Conectar", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -245,7 +254,7 @@ fun EndpointsConfigDialog(
                 Text("Cancelar", fontFamily = FontFamily.Monospace, color = Color.Gray)
             }
         },
-        containerColor = Color(0xFF0B131C)
+        containerColor = CalcBezel
     )
 }
 
@@ -254,7 +263,7 @@ fun AnalyticalGuideDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("GUÍA ANALÍTICA Y TEÓRICA L13", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = Color(0xFF00FF66))
+            Text("GUÍA ANALÍTICA Y TEÓRICA L13", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = CalcPlotY1)
         },
         text = {
             Column(
@@ -263,24 +272,27 @@ fun AnalyticalGuideDialog(onDismiss: () -> Unit) {
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text("1. SUMA AMALGAMADA (H_A ⊕ H_B):", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFF00E5FF))
-                Text("Unificación de hipergrafos persistentes sobre intersecciones no vacías (Pushouts categóricos). Los potenciales energéticos se fusionan aditivamente preservando la invariancia modal.", fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = Color.White)
+                Text("1. SUMA AMALGAMADA (H_A ⊕ H_B):", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = CalcPlotY1)
+                Text("Unificación de hipergrafos persistentes sobre intersecciones no vacías (Pushouts categóricos). Los potenciales energéticos se fusionan aditivamente preservando la invariancia modal.", fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = CalcLcdText)
 
-                Text("2. TRANSFORMACIÓN DUAL DE BERGE H*:", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFF00E5FF))
-                Text("Intercambia vértices y aristas (V* = E, E* = V). Permite mapear relaciones poliádicas como flujos de información disipativa.", fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = Color.White)
+                Text("2. TRANSFORMACIÓN DUAL DE BERGE H*:", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = CalcPlotY2)
+                Text("Intercambia vértices y aristas (V* = E, E* = V). Permite mapear relaciones poliádicas como flujos de información disipativa.", fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = CalcLcdText)
 
-                Text("3. SINCRONIZACIÓN DE KURAMOTO EN S¹:", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFF00E5FF))
-                Text("Dinámica de acoplamiento de orden superior (arXiv:2512.14729). R(t) mide el parámetro de coherencia del atractor autopoiético.", fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = Color.White)
+                Text("3. SINCRONIZACIÓN DE KURAMOTO EN S¹:", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = CalcPlotY3)
+                Text("Dinámica de acoplamiento de orden superior (arXiv:2512.14729). R(t) mide el parámetro de coherencia del atractor autopoiético.", fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = CalcLcdText)
 
-                Text("4. COMPLEJOS DE VIETORIS-RIPS Y VSA:", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFF00E5FF))
-                Text("Filtraciones topológicas computan β₀ y β₁ (números de Betti) con convolución circular FFT de vectores de 2048 dimensiones.", fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = Color.White)
+                Text("4. COMPLEJOS DE VIETORIS-RIPS Y VSA:", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = CalcPlotY1)
+                Text("Filtraciones topológicas computan β₀ y β₁ (números de Betti) con convolución circular FFT de vectores de 2048 dimensiones.", fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = CalcLcdText)
             }
         },
         confirmButton = {
-            ElevatedButton(onClick = onDismiss) {
-                Text("Entendido", fontFamily = FontFamily.Monospace)
+            ElevatedButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.elevatedButtonColors(containerColor = CalcKeyEnterBg, contentColor = CalcKeyEnterText)
+            ) {
+                Text("Entendido", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
             }
         },
-        containerColor = Color(0xFF0B131C)
+        containerColor = CalcBezel
     )
 }

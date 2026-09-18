@@ -25,6 +25,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.l13brain.ui.theme.CalcBezel
+import com.example.l13brain.ui.theme.CalcBevelBorder
+import com.example.l13brain.ui.theme.CalcBorderSubtle
+import com.example.l13brain.ui.theme.CalcKey2ndBg
+import com.example.l13brain.ui.theme.CalcKeyAlphaBg
+import com.example.l13brain.ui.theme.CalcKeyVarBg
+import com.example.l13brain.ui.theme.CalcLcdBackground
+import com.example.l13brain.ui.theme.CalcLcdText
+import com.example.l13brain.ui.theme.CalcLcdTextMuted
+import com.example.l13brain.ui.theme.CalcPlotY1
+import com.example.l13brain.ui.theme.CalcPlotY2
+import com.example.l13brain.ui.theme.CalcPlotY3
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveBg
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveBorder
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveText
+import com.example.l13brain.ui.theme.CalcSoftkeyBg
+import com.example.l13brain.ui.theme.CalcSoftkeyBorder
 
 @Composable
 fun TopHeader(
@@ -41,17 +58,17 @@ fun TopHeader(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color(0xFF03070E))
-            .border(1.2.dp, Color(0xFF103328), RoundedCornerShape(8.dp))
+            .background(CalcBezel, RoundedCornerShape(8.dp))
+            .border(1.2.dp, CalcBevelBorder, RoundedCornerShape(8.dp))
             .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
-        // 1. Top Bar: App Title + Artemis MCP & Guide Buttons
+        // 1. Top Bar: Calculator Model Title + Badges
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Title with Pulsing Phosphor Green Dot
+            // Title with Graphing Calculator Indicator
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f, fill = false)
@@ -59,81 +76,81 @@ fun TopHeader(
                 Box(
                     modifier = Modifier
                         .size(8.dp)
-                        .background(if (isPaused) Color(0xFFFFB300) else Color(0xFF00FF66), CircleShape)
+                        .background(if (isPaused) CalcPlotY2 else CalcPlotY1, CircleShape)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "TOP-TUI PRO v3.5 // L13 BRAIN",
+                    text = "TI-L13 GRAPHING // MATRIX v3.5",
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 11.5.sp,
-                    color = Color(0xFF00FF66),
+                    fontSize = 11.sp,
+                    color = CalcPlotY1,
                     maxLines = 1
                 )
             }
 
             // Top Badges
             Row(
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Tick indicator
+                // Tick indicator (LCD coordinate step counter)
                 Box(
                     modifier = Modifier
-                        .border(1.dp, Color(0xFF16382B), RoundedCornerShape(4.dp))
-                        .background(Color(0xFF061017), RoundedCornerShape(4.dp))
+                        .border(1.dp, CalcBorderSubtle, RoundedCornerShape(4.dp))
+                        .background(CalcLcdBackground, RoundedCornerShape(4.dp))
                         .padding(horizontal = 5.dp, vertical = 2.5.dp)
                 ) {
                     Text(
-                        text = "TICK:$tick",
+                        text = "T:$tick",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFB300)
+                        color = CalcPlotY2
                     )
                 }
 
-                // Artemis MCP Badge Button
+                // Artemis AI Assistant Badge
                 Box(
                     modifier = Modifier
-                        .border(1.dp, Color(0xFF00E5FF), RoundedCornerShape(4.dp))
-                        .background(Color(0xFF0A1926), RoundedCornerShape(4.dp))
+                        .border(1.dp, CalcPlotY1.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                        .background(CalcKeyVarBg, RoundedCornerShape(4.dp))
                         .clickable { onOpenArtemis() }
-                        .padding(horizontal = 6.dp, vertical = 2.5.dp),
+                        .padding(horizontal = 5.dp, vertical = 2.5.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "🤖 ARTEMIS",
                         fontFamily = FontFamily.Monospace,
-                        fontSize = 9.5.sp,
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E5FF)
+                        color = CalcPlotY1
                     )
                 }
 
-                // Calculator Badge Button
+                // Calculator Matrix Dialog Button
                 Box(
                     modifier = Modifier
-                        .border(1.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp))
-                        .background(Color(0xFF072116), RoundedCornerShape(4.dp))
+                        .border(1.dp, CalcPlotY2.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                        .background(CalcKey2ndBg, RoundedCornerShape(4.dp))
                         .clickable { onOpenCalculator() }
-                        .padding(horizontal = 6.dp, vertical = 2.5.dp),
+                        .padding(horizontal = 5.dp, vertical = 2.5.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "🧮 CALC",
                         fontFamily = FontFamily.Monospace,
-                        fontSize = 9.5.sp,
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00FF66)
+                        color = CalcPlotY2
                     )
                 }
 
                 // Guide Badge Button
                 Box(
                     modifier = Modifier
-                        .border(1.dp, Color(0xFF335C4A), RoundedCornerShape(4.dp))
-                        .background(Color(0xFF0A1926), RoundedCornerShape(4.dp))
+                        .border(1.dp, CalcPlotY3.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                        .background(CalcKeyAlphaBg, RoundedCornerShape(4.dp))
                         .clickable { onOpenGuide() }
                         .padding(horizontal = 5.dp, vertical = 2.5.dp),
                     contentAlignment = Alignment.Center
@@ -141,9 +158,9 @@ fun TopHeader(
                     Text(
                         text = "📖 GUIDE",
                         fontFamily = FontFamily.Monospace,
-                        fontSize = 9.5.sp,
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF86EFAC)
+                        color = CalcPlotY3
                     )
                 }
             }
@@ -151,35 +168,39 @@ fun TopHeader(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // 2. Tab Navigation Bar (4 Tabs matching screenshots)
+        // 2. Softkeys Row (F1: GRAFO, F2: REPL, F3: TELEMETRÍA, F4: AJUSTES)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             HeaderTabItem(
-                title = "🌐 GRAFO",
+                fKey = "F1",
+                title = "GRAFO",
                 isSelected = selectedTab == 0,
                 onClick = { onTabSelected(0) },
                 modifier = Modifier.weight(1f)
             )
 
             HeaderTabItem(
-                title = "💻 REPL",
+                fKey = "F2",
+                title = "REPL",
                 isSelected = selectedTab == 1,
                 onClick = { onTabSelected(1) },
                 modifier = Modifier.weight(1f)
             )
 
             HeaderTabItem(
-                title = "📊 TELEMETRÍA",
+                fKey = "F3",
+                title = "TELEM",
                 isSelected = selectedTab == 2,
                 onClick = { onTabSelected(2) },
                 modifier = Modifier.weight(1f)
             )
 
             HeaderTabItem(
-                title = "⚙️ AJUSTES",
+                fKey = "F4",
+                title = "AJUSTES",
                 isSelected = selectedTab == 3,
                 onClick = { onTabSelected(3) },
                 modifier = Modifier.weight(1f)
@@ -188,40 +209,56 @@ fun TopHeader(
 
         Spacer(modifier = Modifier.height(5.dp))
 
-        // 3. Status Sub-strip
+        // 3. Graphing Calculator LCD Annunciator Strip (RAD | NORMAL | FLOAT | REAL | FULL)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF02050A), RoundedCornerShape(4.dp))
-                .border(0.8.dp, Color(0xFF0C2418), RoundedCornerShape(4.dp))
+                .background(CalcLcdBackground, RoundedCornerShape(4.dp))
+                .border(0.8.dp, CalcBorderSubtle, RoundedCornerShape(4.dp))
                 .padding(horizontal = 6.dp, vertical = 3.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "MODO: AMALGAMADA DPO",
+                text = "RAD",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF00FF66)
+                color = CalcPlotY1
             )
             Text(
-                text = "FRACTAL: L13",
+                text = "NORMAL",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.sp,
-                color = Color(0xFF00E5FF)
+                fontWeight = FontWeight.Medium,
+                color = CalcLcdTextMuted
             )
             Text(
-                text = if (isPaused) "ESTADO: PAUSADO" else "ESTADO: AUTOPOIÉTICO",
+                text = "FLOAT 6",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.sp,
-                color = if (isPaused) Color(0xFFFFB300) else Color(0xFF86EFAC)
+                fontWeight = FontWeight.Bold,
+                color = CalcPlotY2
             )
             Text(
-                text = "MEM: 14.2MB",
+                text = "REAL",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.sp,
-                color = Color(0xFF94A3B8)
+                fontWeight = FontWeight.Bold,
+                color = CalcPlotY3
+            )
+            Text(
+                text = if (isPaused) "PAUSED" else "RUNNING",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isPaused) CalcPlotY2 else CalcPlotY3
+            )
+            Text(
+                text = "🔋 100%",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.sp,
+                color = CalcLcdText
             )
         }
     }
@@ -229,14 +266,16 @@ fun TopHeader(
 
 @Composable
 private fun HeaderTabItem(
+    fKey: String,
     title: String,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val borderColor = if (isSelected) Color(0xFF00FF66) else Color(0xFF143022)
-    val backgroundColor = if (isSelected) Color(0xFF072618) else Color(0xFF070E17)
-    val textColor = if (isSelected) Color(0xFF00FF66) else Color(0xFF4F7363)
+    val borderColor = if (isSelected) Color(0xFFFFFFFF) else Color(0xFF52525B)
+    val backgroundColor = if (isSelected) Color(0xFFFFFFFF) else Color(0xFF18181B)
+    val textColor = if (isSelected) Color(0xFF000000) else Color(0xFFFFFFFF)
+    val fKeyColor = if (isSelected) Color(0xFF000000) else Color(0xFFA1A1AA)
 
     Box(
         modifier = modifier
@@ -247,14 +286,28 @@ private fun HeaderTabItem(
             .padding(horizontal = 2.dp, vertical = 2.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = title,
-            fontFamily = FontFamily.Monospace,
-            fontSize = 9.5.sp,
-            fontWeight = FontWeight.Bold,
-            color = textColor,
-            textAlign = TextAlign.Center,
-            maxLines = 1
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = fKey,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 7.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = fKeyColor,
+                lineHeight = 9.sp
+            )
+            Text(
+                text = title,
+                fontFamily = FontFamily.Monospace,
+                fontSize = 8.5.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = textColor,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                lineHeight = 10.sp
+            )
+        }
     }
 }

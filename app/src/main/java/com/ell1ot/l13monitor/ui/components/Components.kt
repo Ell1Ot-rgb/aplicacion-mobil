@@ -24,23 +24,22 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ell1ot.l13monitor.ui.theme.L13Ok
-import com.ell1ot.l13monitor.ui.theme.L13Warn
 
 @Composable
 fun StatusIndicator(ok: Boolean, label: String, modifier: Modifier = Modifier) {
-    val statusColor = if (ok) L13Ok else L13Warn
+    val statusColor = if (ok) Color(0xFFFFFFFF) else Color(0xFFA1A1AA)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .background(Color(0xFF08121C), RoundedCornerShape(4.dp))
-            .border(0.8.dp, statusColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+            .background(Color(0xFF18181B), RoundedCornerShape(4.dp))
+            .border(1.dp, Color(0xFF52525B), RoundedCornerShape(4.dp))
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Box(
             modifier = Modifier
-                .size(8.dp)
-                .background(statusColor, CircleShape),
+                .size(7.dp)
+                .background(statusColor, CircleShape)
+                .border(0.5.dp, Color(0xFF000000), CircleShape),
         )
         Text(
             text = " $label",
@@ -55,7 +54,7 @@ fun StatusIndicator(ok: Boolean, label: String, modifier: Modifier = Modifier) {
 @Composable
 fun MetricRow(label: String, value: String, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(vertical = 1.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -63,14 +62,14 @@ fun MetricRow(label: String, value: String, modifier: Modifier = Modifier) {
             text = label.uppercase(),
             fontFamily = FontFamily.Monospace,
             fontSize = 9.sp,
-            color = Color(0xFF6B8299)
+            color = Color(0xFFA1A1AA)
         )
         Text(
             text = value,
             fontFamily = FontFamily.Monospace,
             fontSize = 9.5.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF86EFAC)
+            color = Color(0xFFFFFFFF)
         )
     }
 }
@@ -82,15 +81,17 @@ fun CommandButton(text: String, enabled: Boolean = true, onClick: () -> Unit, mo
         enabled = enabled,
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF0B1926),
-            contentColor = Color(0xFF00FF66)
+            containerColor = Color(0xFFFFFFFF),
+            contentColor = Color(0xFF000000),
+            disabledContainerColor = Color(0xFF27272A),
+            disabledContentColor = Color(0xFF71717A)
         ),
         shape = RoundedCornerShape(4.dp)
     ) {
         Text(
             text = text,
             fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Black,
             fontSize = 10.sp
         )
     }
@@ -99,11 +100,11 @@ fun CommandButton(text: String, enabled: Boolean = true, onClick: () -> Unit, mo
 @Composable
 fun TopologyCard(title: String, subtitle: String?, content: (@Composable () -> Unit)? = null) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF080E18)),
-        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0A0A0A)),
+        shape = RoundedCornerShape(6.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, Color(0xFF142436), RoundedCornerShape(8.dp))
+            .border(1.dp, Color(0xFF3F3F46), RoundedCornerShape(6.dp))
     ) {
         Column(
             modifier = Modifier
@@ -121,14 +122,14 @@ fun TopologyCard(title: String, subtitle: String?, content: (@Composable () -> U
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 10.5.sp,
-                    color = Color(0xFF00E5FF)
+                    color = Color(0xFFFFFFFF)
                 )
                 if (subtitle != null) {
                     Text(
                         text = subtitle,
                         fontFamily = FontFamily.Monospace,
                         fontSize = 8.5.sp,
-                        color = Color(0xFFFFB300)
+                        color = Color(0xFFA1A1AA)
                     )
                 }
             }
@@ -136,3 +137,4 @@ fun TopologyCard(title: String, subtitle: String?, content: (@Composable () -> U
         }
     }
 }
+

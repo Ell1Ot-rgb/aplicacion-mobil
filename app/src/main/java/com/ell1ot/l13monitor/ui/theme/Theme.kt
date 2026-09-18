@@ -12,6 +12,7 @@ private val DarkScheme = darkColorScheme(
     surface = L13Surface,
     onSurface = L13OnSurface,
     error = L13Error,
+    outline = L13Bevel,
 )
 
 @Composable

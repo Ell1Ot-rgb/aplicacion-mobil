@@ -53,50 +53,45 @@ fun AppNavHost() {
     val l13ViewModel: L13ViewModel = viewModel()
 
     Scaffold(
-        containerColor = Color(0xFF03070E),
+        containerColor = Color(0xFF000000),
         bottomBar = {
-            // CNC Industrial Instrument Bottom Navigation Dock
+            // Graphing Calculator Hardware Bottom Navigation Dock (High-Contrast B&W)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF03070E))
-                    .border(1.dp, Color(0xFF0E2218))
+                    .background(Color(0xFF000000))
+                    .border(1.dp, Color(0xFF27272A))
             ) {
-                // Top scanning phosphor neon edge
+                // Top sharp LCD separator line
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(1.dp)
-                        .background(Color(0xFF00FF66).copy(alpha = 0.40f))
+                        .background(Color(0xFFFFFFFF))
                 )
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp)
+                        .height(54.dp)
                         .padding(horizontal = 6.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Route.entries.forEach { route ->
                         val isSelected = current == route.path
-                        val activeColor = when (route) {
-                            Route.TOPTUI -> Color(0xFF00FF66)
-                            Route.CONTROL -> Color(0xFF00E5FF)
-                            Route.DASHBOARD -> Color(0xFFFFB300)
-                        }
 
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(40.dp)
+                                .height(42.dp)
                                 .background(
-                                    if (isSelected) activeColor.copy(alpha = 0.14f) else Color(0xFF060B12),
+                                    if (isSelected) Color(0xFFFFFFFF) else Color(0xFF18181B),
                                     RoundedCornerShape(4.dp)
                                 )
                                 .border(
                                     1.2.dp,
-                                    if (isSelected) activeColor else Color(0xFF12222E),
+                                    if (isSelected) Color(0xFFFFFFFF) else Color(0xFF52525B),
                                     RoundedCornerShape(4.dp)
                                 )
                                 .clickable {
@@ -119,7 +114,7 @@ fun AppNavHost() {
                                         modifier = Modifier
                                             .size(5.dp)
                                             .background(
-                                                if (isSelected) activeColor else Color(0xFF283A32),
+                                                if (isSelected) Color(0xFF000000) else Color(0xFF71717A),
                                                 CircleShape
                                             )
                                     )
@@ -129,7 +124,7 @@ fun AppNavHost() {
                                         fontFamily = FontFamily.Monospace,
                                         fontSize = 7.5.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isSelected) activeColor.copy(alpha = 0.85f) else Color(0xFF476056),
+                                        color = if (isSelected) Color(0xFF000000) else Color(0xFFA1A1AA),
                                         maxLines = 1
                                     )
                                 }
@@ -139,7 +134,7 @@ fun AppNavHost() {
                                     fontFamily = FontFamily.Monospace,
                                     fontSize = 8.5.sp,
                                     fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
-                                    color = if (isSelected) activeColor else Color(0xFF7A9388),
+                                    color = if (isSelected) Color(0xFF000000) else Color(0xFFFFFFFF),
                                     maxLines = 1
                                 )
                             }

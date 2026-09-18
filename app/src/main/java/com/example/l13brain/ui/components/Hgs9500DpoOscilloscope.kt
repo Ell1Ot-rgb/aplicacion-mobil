@@ -54,6 +54,26 @@ import androidx.compose.ui.unit.sp
 import com.example.l13brain.model.HyperEdge
 import com.example.l13brain.model.HyperNode
 import com.example.l13brain.model.TelemetryState
+import com.example.l13brain.ui.theme.CalcBezel
+import com.example.l13brain.ui.theme.CalcBevelBorder
+import com.example.l13brain.ui.theme.CalcBorderSubtle
+import com.example.l13brain.ui.theme.CalcChassis
+import com.example.l13brain.ui.theme.CalcLcdAxis
+import com.example.l13brain.ui.theme.CalcLcdBackground
+import com.example.l13brain.ui.theme.CalcLcdGrid
+import com.example.l13brain.ui.theme.CalcLcdText
+import com.example.l13brain.ui.theme.CalcLcdTextMuted
+import com.example.l13brain.ui.theme.CalcPlotY1
+import com.example.l13brain.ui.theme.CalcPlotY2
+import com.example.l13brain.ui.theme.CalcPlotY3
+import com.example.l13brain.ui.theme.CalcPlotY4
+import com.example.l13brain.ui.theme.CalcPlotY5
+import com.example.l13brain.ui.theme.CalcPlotY6
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveBg
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveBorder
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveText
+import com.example.l13brain.ui.theme.CalcSoftkeyBg
+import com.example.l13brain.ui.theme.CalcSoftkeyBorder
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -182,8 +202,8 @@ fun Hgs9500DpoOscilloscope(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color(0xFF0C1118), RoundedCornerShape(12.dp))
-            .border(1.5.dp, Color(0xFF28384C), RoundedCornerShape(12.dp))
+            .background(CalcChassis, RoundedCornerShape(12.dp))
+            .border(1.5.dp, CalcBevelBorder, RoundedCornerShape(12.dp))
             .padding(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -191,8 +211,8 @@ fun Hgs9500DpoOscilloscope(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF141C27), RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
-                .border(1.dp, Color(0xFF1E2C3D), RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
+                .background(CalcBezel, RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
+                .border(1.dp, CalcBorderSubtle, RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
                 .padding(horizontal = 8.dp, vertical = 5.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -205,7 +225,7 @@ fun Hgs9500DpoOscilloscope(
                 Box(
                     modifier = Modifier
                         .size(8.dp)
-                        .background(if (isRunning) Color(0xFF00FF66) else Color(0xFFFF3366), CircleShape)
+                        .background(if (isRunning) CalcPlotY3 else CalcPlotY4, CircleShape)
                 )
 
                 Column {
@@ -218,12 +238,12 @@ fun Hgs9500DpoOscilloscope(
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Black,
                             fontSize = 10.5.sp,
-                            color = Color(0xFFF1F5F9)
+                            color = CalcLcdText
                         )
                         Box(
                             modifier = Modifier
-                                .background(Color(0xFF062328), RoundedCornerShape(2.dp))
-                                .border(0.6.dp, Color(0xFF00E5FF), RoundedCornerShape(2.dp))
+                                .background(CalcSoftkeyBg, RoundedCornerShape(2.dp))
+                                .border(0.6.dp, CalcPlotY1, RoundedCornerShape(2.dp))
                                 .padding(horizontal = 3.dp, vertical = 0.5.dp)
                         ) {
                             Text(
@@ -231,7 +251,7 @@ fun Hgs9500DpoOscilloscope(
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 7.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF00E5FF)
+                                color = CalcPlotY1
                             )
                         }
                     }
@@ -239,7 +259,7 @@ fun Hgs9500DpoOscilloscope(
                         text = "10 GSa/s • FastAcq 2.5M wfms/s • ISO/IEC 17025 Calibrated",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 6.5.sp,
-                        color = Color(0xFF7E93A8)
+                        color = CalcLcdTextMuted
                     )
                 }
             }
@@ -251,8 +271,8 @@ fun Hgs9500DpoOscilloscope(
             ) {
                 Box(
                     modifier = Modifier
-                        .background(if (showCrtShader) Color(0xFF09221C) else Color(0xFF111822), RoundedCornerShape(3.dp))
-                        .border(0.8.dp, if (showCrtShader) Color(0xFF00FF66) else Color(0xFF28394E), RoundedCornerShape(3.dp))
+                        .background(if (showCrtShader) CalcSoftkeyActiveBg else CalcSoftkeyBg, RoundedCornerShape(3.dp))
+                        .border(0.8.dp, if (showCrtShader) CalcSoftkeyActiveBorder else CalcSoftkeyBorder, RoundedCornerShape(3.dp))
                         .clickable {
                             showCrtShader = !showCrtShader
                             toastText = if (showCrtShader) "CRT SHADERS: ACTIVADO" else "F2 CLEAN: CERO ARTEFACTOS"
@@ -264,13 +284,13 @@ fun Hgs9500DpoOscilloscope(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 7.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (showCrtShader) Color(0xFF00FF66) else Color(0xFF7E93A8)
+                        color = if (showCrtShader) CalcPlotY3 else CalcLcdTextMuted
                     )
                 }
 
                 Box(
                     modifier = Modifier
-                        .background(Color(0xFF00E5FF), RoundedCornerShape(3.dp))
+                        .background(CalcPlotY1, RoundedCornerShape(3.dp))
                         .clickable {
                             toastText = "REGISTRO METROLÓGICO HGS-9500 EXPORTADO"
                         }
@@ -281,7 +301,7 @@ fun Hgs9500DpoOscilloscope(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 7.sp,
                         fontWeight = FontWeight.Black,
-                        color = Color(0xFF040810)
+                        color = CalcChassis
                     )
                 }
             }
@@ -291,8 +311,8 @@ fun Hgs9500DpoOscilloscope(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF03070B), RoundedCornerShape(8.dp))
-                .border(1.5.dp, Color(0xFF192534), RoundedCornerShape(8.dp))
+                .background(CalcBezel, RoundedCornerShape(8.dp))
+                .border(1.5.dp, CalcBorderSubtle, RoundedCornerShape(8.dp))
                 .padding(4.dp),
             verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
@@ -300,8 +320,8 @@ fun Hgs9500DpoOscilloscope(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF050B12), RoundedCornerShape(4.dp))
-                    .border(0.8.dp, Color(0xFF0C1B2A), RoundedCornerShape(4.dp))
+                    .background(CalcLcdBackground, RoundedCornerShape(4.dp))
+                    .border(0.8.dp, CalcBorderSubtle, RoundedCornerShape(4.dp))
                     .padding(horizontal = 6.dp, vertical = 2.5.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -317,19 +337,19 @@ fun Hgs9500DpoOscilloscope(
                         Box(
                             modifier = Modifier
                                 .size(6.dp)
-                                .background(if (isRunning) Color(0xFF00FF66) else Color(0xFFFFB300), CircleShape)
+                                .background(if (isRunning) CalcPlotY3 else CalcPlotY2, CircleShape)
                         )
                         Text(
                             text = if (isRunning) "● TRIG'D" else "○ READY",
                             fontFamily = FontFamily.Monospace,
                             fontSize = 7.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (isRunning) Color(0xFF00FF66) else Color(0xFFFFB300)
+                            color = if (isRunning) CalcPlotY3 else CalcPlotY2
                         )
                     }
-                    Text("10.0 GSa/s", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFF00E5FF))
-                    Text("24.0 Mpts", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFF7E93A8))
-                    Text("BW: 1.0 GHz", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = Color(0xFFCBD5E1))
+                    Text("10.0 GSa/s", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = CalcPlotY1)
+                    Text("24.0 Mpts", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = CalcLcdTextMuted)
+                    Text("BW: 1.0 GHz", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = CalcLcdText)
                 }
 
                 // Topological Betti Numbers Readout (Homology Invariants)
@@ -341,10 +361,10 @@ fun Hgs9500DpoOscilloscope(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
-                    Text("β₀:$b0", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFB300))
-                    Text("β₁:$b1", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00E5FF))
-                    Text("β₂:$b2", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB55FE6))
-                    Text("χ:$euler", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00FF66))
+                    Text("β₀:$b0", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = CalcPlotY2)
+                    Text("β₁:$b1", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = CalcPlotY1)
+                    Text("β₂:$b2", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = CalcPlotY6)
+                    Text("χ:$euler", fontFamily = FontFamily.Monospace, fontSize = 7.5.sp, fontWeight = FontWeight.Bold, color = CalcPlotY3)
                 }
             }
 
@@ -353,8 +373,8 @@ fun Hgs9500DpoOscilloscope(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(230.dp)
-                    .background(Color(0xFF020509), RoundedCornerShape(6.dp))
-                    .border(1.dp, Color(0xFF0E2230), RoundedCornerShape(6.dp))
+                    .background(CalcLcdBackground, RoundedCornerShape(6.dp))
+                    .border(1.dp, CalcBorderSubtle, RoundedCornerShape(6.dp))
                     .pointerInput(Unit) {
                         detectDragGestures { change, dragAmount ->
                             change.consume()
@@ -374,7 +394,7 @@ fun Hgs9500DpoOscilloscope(
                     val currentRotY = rotY + (if (isRunning && autoOrbit) animOrbit * 0.08f else 0f)
 
                     // 1. Perspective Coordinate Ground Floor Grid (Y = -2.4f)
-                    val gridCol = Color(0xFF0A1B28)
+                    val gridCol = CalcLcdGrid
                     for (i in -5..5) {
                         val p1 = project3D(i * 0.9f, -2.4f, -3.2f, rotX, currentRotY, cx, cy, baseScale)
                         val p2 = project3D(i * 0.9f, -2.4f, 3.2f, rotX, currentRotY, cx, cy, baseScale)

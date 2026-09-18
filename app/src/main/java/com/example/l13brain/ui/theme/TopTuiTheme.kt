@@ -11,73 +11,62 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.l13brain.model.CrtProfile
 
-val CrtPhosphorGreen = Color(0xFF00FF66)
-val CrtGreenGlow = Color(0x3300FF66)
-val CrtGreenDim = Color(0xFF0D5C3A)
-val CrtGreenDark = Color(0xFF08261A)
+// Primary Graphing Calculator Theme Colors
+val CrtPhosphorGreen = CalcPlotY3
+val CrtGreenGlow = Color(0x3310B981)
+val CrtGreenDim = Color(0xFF064E3B)
+val CrtGreenDark = Color(0xFF022C22)
 
-val CrtNeonCyan = Color(0xFF00E5FF)
-val CrtCyanGlow = Color(0x3300E5FF)
+val CrtNeonCyan = CalcPlotY1
+val CrtCyanGlow = Color(0x3338BDF8)
 
-val CrtAmber = Color(0xFFFFB300)
-val CrtAmberGlow = Color(0x33FFB300)
+val CrtAmber = CalcPlotY2
+val CrtAmberGlow = Color(0x33F59E0B)
 
-val CrtPink = Color(0xFFFF4081)
-val CrtPinkGlow = Color(0x33FF4081)
+val CrtPink = CalcPlotY4
+val CrtPinkGlow = Color(0x33F43F5E)
 
-val CrtBackground = Color(0xFF05080E)
-val CrtSurface = Color(0xFF0A0F1A)
-val CrtSurfaceBorder = Color(0xFF103328)
-val CrtTextMuted = Color(0xFF5B786D)
+val CrtBackground = CalcChassis
+val CrtSurface = CalcBezel
+val CrtSurfaceBorder = CalcBevelBorder
+val CrtTextMuted = CalcLcdTextMuted
 
 fun getThemeColors(profile: CrtProfile) = when (profile) {
-    CrtProfile.CRT_P31_GREEN -> darkColorScheme(
-        primary = CrtPhosphorGreen,
-        secondary = CrtNeonCyan,
-        tertiary = CrtAmber,
-        background = CrtBackground,
-        surface = CrtSurface,
+    CrtProfile.CRT_P31_GREEN, CrtProfile.CLEAN_MODE -> darkColorScheme(
+        primary = CalcPlotY1,
+        secondary = CalcPlotY2,
+        tertiary = CalcPlotY3,
+        background = CalcChassis,
+        surface = CalcBezel,
         onPrimary = Color.Black,
         onSecondary = Color.Black,
-        onBackground = CrtPhosphorGreen,
-        onSurface = CrtPhosphorGreen,
-        outline = CrtSurfaceBorder
+        onBackground = CalcLcdText,
+        onSurface = CalcLcdText,
+        outline = CalcBevelBorder
     )
     CrtProfile.AMBER_P4 -> darkColorScheme(
-        primary = CrtAmber,
-        secondary = CrtPhosphorGreen,
-        tertiary = CrtNeonCyan,
-        background = Color(0xFF0A0804),
-        surface = Color(0xFF140F08),
+        primary = CalcPlotY2,
+        secondary = CalcPlotY1,
+        tertiary = CalcPlotY3,
+        background = Color(0xFF100E08),
+        surface = Color(0xFF1A160F),
         onPrimary = Color.Black,
         onSecondary = Color.Black,
-        onBackground = CrtAmber,
-        onSurface = CrtAmber,
-        outline = Color(0xFF38260D)
+        onBackground = CalcPlotY2,
+        onSurface = CalcPlotY2,
+        outline = Color(0xFF382A16)
     )
     CrtProfile.CYBER_CYAN -> darkColorScheme(
-        primary = CrtNeonCyan,
-        secondary = CrtPink,
-        tertiary = CrtPhosphorGreen,
-        background = Color(0xFF050B12),
-        surface = Color(0xFF0B1624),
+        primary = CalcPlotY1,
+        secondary = CalcPlotY4,
+        tertiary = CalcPlotY3,
+        background = CalcLcdBackground,
+        surface = CalcBezel,
         onPrimary = Color.Black,
         onSecondary = Color.Black,
-        onBackground = CrtNeonCyan,
-        onSurface = CrtNeonCyan,
-        outline = Color(0xFF123447)
-    )
-    CrtProfile.CLEAN_MODE -> darkColorScheme(
-        primary = Color(0xFF4ADE80),
-        secondary = Color(0xFF38BDF8),
-        tertiary = Color(0xFFFBBF24),
-        background = Color(0xFF0F172A),
-        surface = Color(0xFF1E293B),
-        onPrimary = Color.Black,
-        onSecondary = Color.Black,
-        onBackground = Color(0xFFF8FAFC),
-        onSurface = Color(0xFFF8FAFC),
-        outline = Color(0xFF334155)
+        onBackground = CalcPlotY1,
+        onSurface = CalcPlotY1,
+        outline = CalcBevelBorder
     )
 }
 

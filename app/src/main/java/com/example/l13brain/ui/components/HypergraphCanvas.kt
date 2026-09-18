@@ -59,6 +59,32 @@ import com.example.l13brain.model.HyperNode
 import com.example.l13brain.model.HypergraphTemporalRegime
 import com.example.l13brain.model.PersistenceBarcodeInterval
 import com.example.l13brain.model.TelemetryState
+import com.example.l13brain.ui.theme.CalcBezel
+import com.example.l13brain.ui.theme.CalcBevelBorder
+import com.example.l13brain.ui.theme.CalcBorderSubtle
+import com.example.l13brain.ui.theme.CalcChassis
+import com.example.l13brain.ui.theme.CalcKey2ndBg
+import com.example.l13brain.ui.theme.CalcKeyAlphaBg
+import com.example.l13brain.ui.theme.CalcKeyEnterBg
+import com.example.l13brain.ui.theme.CalcKeyNumBg
+import com.example.l13brain.ui.theme.CalcKeyNumBorder
+import com.example.l13brain.ui.theme.CalcKeyVarBg
+import com.example.l13brain.ui.theme.CalcLcdAxis
+import com.example.l13brain.ui.theme.CalcLcdBackground
+import com.example.l13brain.ui.theme.CalcLcdGrid
+import com.example.l13brain.ui.theme.CalcLcdText
+import com.example.l13brain.ui.theme.CalcLcdTextMuted
+import com.example.l13brain.ui.theme.CalcPlotY1
+import com.example.l13brain.ui.theme.CalcPlotY2
+import com.example.l13brain.ui.theme.CalcPlotY3
+import com.example.l13brain.ui.theme.CalcPlotY4
+import com.example.l13brain.ui.theme.CalcPlotY5
+import com.example.l13brain.ui.theme.CalcPlotY6
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveBg
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveBorder
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveText
+import com.example.l13brain.ui.theme.CalcSoftkeyBg
+import com.example.l13brain.ui.theme.CalcSoftkeyBorder
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -98,25 +124,25 @@ fun ToposcopioGrafoTab(
             .padding(top = 2.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 1. Frame Header: "┌─ TOPOSCOPIO L13 // DOMINIO MIXTO" + View Mode Switcher + MERKLE Badge
+        // 1. Frame Header: "┌─ PLOT 1: TOPOSCOPIO // Y₁(x, y)" + View Mode Switcher + MERKLE Badge
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "┌─ TOPOSCOPIO L13 // DOMINIO MIXTO",
+                text = "┌─ PLOT 1: TOPOSCOPIO // Y₁(x, y)",
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 fontSize = 10.sp,
-                color = Color(0xFF00FF66),
+                color = CalcPlotY1,
                 maxLines = 1,
                 modifier = Modifier.weight(1f)
             )
 
             Spacer(modifier = Modifier.width(4.dp))
 
-            // View Mode Selector: 2D / 3D / AMBOS
+            // View Mode Selector: 2D / 3D / AMBOS (Graphing Calculator View Softkeys)
             Row(
                 horizontalArrangement = Arrangement.spacedBy(3.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -126,23 +152,23 @@ fun ToposcopioGrafoTab(
                     Box(
                         modifier = Modifier
                             .background(
-                                if (isModeSelected) Color(0xFF0C2B1D) else Color(0xFF060F16),
+                                if (isModeSelected) CalcSoftkeyActiveBg else CalcSoftkeyBg,
                                 RoundedCornerShape(3.dp)
                             )
                             .border(
                                 0.8.dp,
-                                if (isModeSelected) Color(0xFF00FF66) else Color(0xFF163228),
+                                if (isModeSelected) CalcSoftkeyActiveBorder else CalcSoftkeyBorder,
                                 RoundedCornerShape(3.dp)
                             )
                             .clickable { viewMode = modeIdx }
-                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                            .padding(horizontal = 6.dp, vertical = 2.5.dp)
                     ) {
                         Text(
                             text = modeLabel,
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
                             fontSize = 8.sp,
-                            color = if (isModeSelected) Color(0xFF00FF66) else Color(0xFF7FA894)
+                            color = if (isModeSelected) CalcSoftkeyActiveText else CalcLcdTextMuted
                         )
                     }
                 }
@@ -152,8 +178,8 @@ fun ToposcopioGrafoTab(
 
             Box(
                 modifier = Modifier
-                    .background(Color(0xFF071A12), RoundedCornerShape(4.dp))
-                    .border(0.8.dp, Color(0xFFFFB300), RoundedCornerShape(4.dp))
+                    .background(CalcKey2ndBg, RoundedCornerShape(4.dp))
+                    .border(0.8.dp, CalcPlotY2, RoundedCornerShape(4.dp))
                     .padding(horizontal = 5.dp, vertical = 2.dp)
             ) {
                 Text(
@@ -161,7 +187,7 @@ fun ToposcopioGrafoTab(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 8.5.sp,
-                    color = Color(0xFFFFB300),
+                    color = CalcPlotY2,
                     maxLines = 1
                 )
             }
@@ -171,8 +197,8 @@ fun ToposcopioGrafoTab(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF040D14), RoundedCornerShape(6.dp))
-                .border(1.dp, Color(0xFF102636), RoundedCornerShape(6.dp))
+                .background(CalcBezel, RoundedCornerShape(6.dp))
+                .border(1.dp, CalcBorderSubtle, RoundedCornerShape(6.dp))
                 .padding(4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -182,7 +208,7 @@ fun ToposcopioGrafoTab(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF88A0B0),
+                color = CalcLcdTextMuted,
                 modifier = Modifier.padding(start = 4.dp, end = 6.dp)
             )
 
@@ -193,20 +219,20 @@ fun ToposcopioGrafoTab(
                 HypergraphTemporalRegime.values().forEach { regime ->
                     val isSel = (regime == temporalRegime)
                     val activeColor = when (regime) {
-                        HypergraphTemporalRegime.ESTATICO -> Color(0xFFCCCCCC)
-                        HypergraphTemporalRegime.CONTINUO -> Color(0xFF00FF66)
-                        HypergraphTemporalRegime.PERSISTENTE -> Color(0xFF00E5FF)
+                        HypergraphTemporalRegime.ESTATICO -> CalcPlotY6
+                        HypergraphTemporalRegime.CONTINUO -> CalcPlotY3
+                        HypergraphTemporalRegime.PERSISTENTE -> CalcPlotY1
                     }
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .background(
-                                if (isSel) activeColor.copy(alpha = 0.18f) else Color(0xFF06131D),
+                                if (isSel) activeColor.copy(alpha = 0.18f) else CalcLcdBackground,
                                 RoundedCornerShape(4.dp)
                             )
                             .border(
                                 1.dp,
-                                if (isSel) activeColor else Color(0xFF142C3D),
+                                if (isSel) activeColor else CalcBorderSubtle,
                                 RoundedCornerShape(4.dp)
                             )
                             .clickable { onRegimeChanged(regime) }
@@ -218,7 +244,7 @@ fun ToposcopioGrafoTab(
                             fontFamily = FontFamily.Monospace,
                             fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
                             fontSize = 8.5.sp,
-                            color = if (isSel) activeColor else Color(0xFF6C8C9E)
+                            color = if (isSel) activeColor else CalcLcdTextMuted
                         )
                     }
                 }
@@ -230,8 +256,8 @@ fun ToposcopioGrafoTab(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF04141E), RoundedCornerShape(6.dp))
-                    .border(1.dp, Color(0xFF007799), RoundedCornerShape(6.dp))
+                    .background(CalcLcdBackground, RoundedCornerShape(6.dp))
+                    .border(1.dp, CalcBorderSubtle, RoundedCornerShape(6.dp))
                     .padding(6.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -243,8 +269,8 @@ fun ToposcopioGrafoTab(
                     // Play/Pause Sweep
                     Box(
                         modifier = Modifier
-                            .background(if (isSweepActive) Color(0xFF0C3D28) else Color(0xFF0B2130), RoundedCornerShape(4.dp))
-                            .border(1.dp, if (isSweepActive) Color(0xFF00FF66) else Color(0xFF00E5FF), RoundedCornerShape(4.dp))
+                            .background(if (isSweepActive) CalcKey2ndBg else CalcSoftkeyBg, RoundedCornerShape(4.dp))
+                            .border(1.dp, if (isSweepActive) CalcPlotY2 else CalcPlotY1, RoundedCornerShape(4.dp))
                             .clickable { onToggleSweep() }
                             .padding(horizontal = 6.dp, vertical = 3.dp)
                     ) {
@@ -253,7 +279,7 @@ fun ToposcopioGrafoTab(
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
                             fontSize = 8.5.sp,
-                            color = if (isSweepActive) Color(0xFF00FF66) else Color(0xFF00E5FF)
+                            color = if (isSweepActive) CalcPlotY2 else CalcPlotY1
                         )
                     }
 
@@ -262,42 +288,42 @@ fun ToposcopioGrafoTab(
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
                         fontSize = 9.sp,
-                        color = Color(0xFF00E5FF)
+                        color = CalcPlotY1
                     )
 
                     // Betti Numbers Indicators
                     Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                         Box(
                             modifier = Modifier
-                                .background(Color(0xFF062316), RoundedCornerShape(3.dp))
-                                .border(0.8.dp, Color(0xFF00FF66), RoundedCornerShape(3.dp))
+                                .background(CalcKeyVarBg, RoundedCornerShape(3.dp))
+                                .border(0.8.dp, CalcPlotY1, RoundedCornerShape(3.dp))
                                 .padding(horizontal = 4.dp, vertical = 1.dp)
                         ) {
-                            Text("β₀=$betti0", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00FF66))
+                            Text("β₀=$betti0", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcPlotY1)
                         }
                         Box(
                             modifier = Modifier
-                                .background(Color(0xFF082230), RoundedCornerShape(3.dp))
-                                .border(0.8.dp, Color(0xFF00E5FF), RoundedCornerShape(3.dp))
+                                .background(CalcKey2ndBg, RoundedCornerShape(3.dp))
+                                .border(0.8.dp, CalcPlotY2, RoundedCornerShape(3.dp))
                                 .padding(horizontal = 4.dp, vertical = 1.dp)
                         ) {
-                            Text("β₁=$betti1", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00E5FF))
+                            Text("β₁=$betti1", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcPlotY2)
                         }
                         Box(
                             modifier = Modifier
-                                .background(Color(0xFF281C08), RoundedCornerShape(3.dp))
-                                .border(0.8.dp, Color(0xFFFFB300), RoundedCornerShape(3.dp))
+                                .background(Color(0xFF381418), RoundedCornerShape(3.dp))
+                                .border(0.8.dp, CalcPlotY4, RoundedCornerShape(3.dp))
                                 .padding(horizontal = 4.dp, vertical = 1.dp)
                         ) {
-                            Text("β₂=$betti2", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFFFFB300))
+                            Text("β₂=$betti2", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcPlotY4)
                         }
                     }
 
                     // Barcode Drawer Toggle
                     Box(
                         modifier = Modifier
-                            .background(if (showBarcodePanel) Color(0xFF1E2638) else Color(0xFF0A131F), RoundedCornerShape(4.dp))
-                            .border(1.dp, Color(0xFF7FA8DE), RoundedCornerShape(4.dp))
+                            .background(if (showBarcodePanel) CalcSoftkeyActiveBg else CalcSoftkeyBg, RoundedCornerShape(4.dp))
+                            .border(1.dp, CalcBorderSubtle, RoundedCornerShape(4.dp))
                             .clickable { showBarcodePanel = !showBarcodePanel }
                             .padding(horizontal = 5.dp, vertical = 2.dp)
                     ) {
@@ -306,7 +332,7 @@ fun ToposcopioGrafoTab(
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
                             fontSize = 8.sp,
-                            color = Color(0xFF7FA8DE)
+                            color = if (showBarcodePanel) CalcSoftkeyActiveText else CalcLcdTextMuted
                         )
                     }
                 }
@@ -317,9 +343,9 @@ fun ToposcopioGrafoTab(
                     onValueChange = onEpsilonChanged,
                     valueRange = 0.0f..2.2f,
                     colors = SliderDefaults.colors(
-                        thumbColor = Color(0xFF00E5FF),
-                        activeTrackColor = Color(0xFF00A0C6),
-                        inactiveTrackColor = Color(0xFF0B2130)
+                        thumbColor = CalcPlotY1,
+                        activeTrackColor = CalcPlotY1,
+                        inactiveTrackColor = CalcLcdGrid
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -331,8 +357,8 @@ fun ToposcopioGrafoTab(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFF020910), RoundedCornerShape(4.dp))
-                            .border(0.8.dp, Color(0xFF10283A), RoundedCornerShape(4.dp))
+                            .background(CalcLcdBackground, RoundedCornerShape(4.dp))
+                            .border(0.8.dp, CalcBorderSubtle, RoundedCornerShape(4.dp))
                             .padding(6.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -341,14 +367,14 @@ fun ToposcopioGrafoTab(
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
                             fontSize = 8.sp,
-                            color = Color(0xFF00E5FF)
+                            color = CalcPlotY1
                         )
                         persistenceIntervals.forEach { interval ->
                             val isAlive = (filtrationEpsilon >= interval.birth && filtrationEpsilon <= interval.death)
                             val barColor = when (interval.dimension) {
-                                0 -> Color(0xFF00FF66)
-                                1 -> Color(0xFF00E5FF)
-                                else -> Color(0xFFFFB300)
+                                0 -> CalcPlotY1
+                                1 -> CalcPlotY2
+                                else -> CalcPlotY4
                             }
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -359,7 +385,7 @@ fun ToposcopioGrafoTab(
                                     text = "${interval.label} [${interval.birth}..${interval.death}]",
                                     fontFamily = FontFamily.Monospace,
                                     fontSize = 7.5.sp,
-                                    color = if (isAlive) barColor else Color(0xFF4A6878),
+                                    color = if (isAlive) barColor else CalcLcdTextMuted,
                                     maxLines = 1,
                                     modifier = Modifier.weight(1f)
                                 )
@@ -368,7 +394,7 @@ fun ToposcopioGrafoTab(
                                     fontFamily = FontFamily.Monospace,
                                     fontSize = 7.5.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isAlive) barColor else Color(0xFF384A54)
+                                    color = if (isAlive) barColor else CalcLcdTextMuted
                                 )
                             }
                         }
@@ -379,30 +405,30 @@ fun ToposcopioGrafoTab(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF0A0F14), RoundedCornerShape(4.dp))
-                    .border(0.8.dp, Color(0xFF3A4B56), RoundedCornerShape(4.dp))
+                    .background(CalcLcdBackground, RoundedCornerShape(4.dp))
+                    .border(0.8.dp, CalcBorderSubtle, RoundedCornerShape(4.dp))
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
                     text = "📸 CORTE t₀ // INVARIANTE TOPOLÓGICO CONGELADO (SIN OSCILACIÓN TEMPORAL)",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 8.5.sp,
-                    color = Color(0xFFB0C4DE)
+                    color = CalcPlotY6
                 )
             }
         } else {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF061A12), RoundedCornerShape(4.dp))
-                    .border(0.8.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp))
+                    .background(CalcLcdBackground, RoundedCornerShape(4.dp))
+                    .border(0.8.dp, CalcBorderSubtle, RoundedCornerShape(4.dp))
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
                     text = "⚡ DINÁMICA CONTINUA // KURAMOTO FLOW [R = ${String.format(java.util.Locale.US, "%.3f", telemetry.kuramotoOrderR)}] & DIFUSIÓN LAPLACIANA EN VIVO",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 8.5.sp,
-                    color = Color(0xFF00FF66)
+                    color = CalcPlotY3
                 )
             }
         }
@@ -413,8 +439,8 @@ fun ToposcopioGrafoTab(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(230.dp)
-                    .background(Color(0xFF03070E), RoundedCornerShape(8.dp))
-                    .border(1.2.dp, Color(0xFF103328), RoundedCornerShape(8.dp))
+                    .background(CalcLcdBackground, RoundedCornerShape(8.dp))
+                    .border(1.2.dp, CalcBevelBorder, RoundedCornerShape(8.dp))
             ) {
                 HypergraphCanvas(
                     nodes = nodes,
@@ -433,34 +459,34 @@ fun ToposcopioGrafoTab(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
-                        .border(1.dp, if (showDensityOverlay) Color(0xFF00E5FF) else Color(0xFF00FF66), RoundedCornerShape(4.dp))
-                        .background(if (showDensityOverlay) Color(0xFF072430) else Color(0xFF061A12), RoundedCornerShape(4.dp))
+                        .border(1.dp, if (showDensityOverlay) CalcPlotY1 else CalcBorderSubtle, RoundedCornerShape(4.dp))
+                        .background(if (showDensityOverlay) CalcKeyVarBg else CalcSoftkeyBg, RoundedCornerShape(4.dp))
                         .clickable { showDensityOverlay = !showDensityOverlay }
                         .padding(horizontal = 6.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = if (showDensityOverlay) "📊 DENSIDAD [ACTIVA]" else "📊 DENSIDAD DE OCUPACIÓN",
+                        text = if (showDensityOverlay) "📊 DENSIDAD [ON]" else "📊 DENSIDAD DE OCUPACIÓN",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (showDensityOverlay) Color(0xFF00E5FF) else Color(0xFF00FF66)
+                        color = if (showDensityOverlay) CalcPlotY1 else CalcLcdTextMuted
                     )
                 }
             }
         }
 
-        // 5. Quick Topology Action Pills
+        // 5. Quick Topology Action Pills (Styled as Graphing Calculator Function Keys)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            TopGraphActionPill("⚡ SUMA AMALGAMADA", Color(0xFF00FF66), onAmalgamatedSum)
-            TopGraphActionPill("🔄 DUAL DE BERGE", Color(0xFF00E5FF), onBergeDual)
-            TopGraphActionPill("🌀 PASO AUTOPOIÉTICO", Color(0xFF86EFAC), onAutopoieticStep)
-            TopGraphActionPill("⚡ +0.50J INYECTAR", Color(0xFFFFB300), onInjectEnergy)
-            TopGraphActionPill("W REGLA WOLFRAM", Color(0xFFFF4081), onWolframMutation)
+            TopGraphActionPill("⚡ SUMA AMALGAMADA", CalcPlotY1, onAmalgamatedSum)
+            TopGraphActionPill("🔄 DUAL DE BERGE", CalcPlotY2, onBergeDual)
+            TopGraphActionPill("🌀 PASO AUTOPOIÉTICO", CalcPlotY3, onAutopoieticStep)
+            TopGraphActionPill("⚡ +0.50J INYECTAR", CalcPlotY4, onInjectEnergy)
+            TopGraphActionPill("🔬 REGLA WOLFRAM", CalcPlotY5, onWolframMutation)
         }
 
         // 6. HGS-9500DPO Real-Time Persistent Hypergraph Oscilloscope (Industrial Metrology Grade)
@@ -489,32 +515,32 @@ fun ToposcopioGrafoTab(
                 text = "[TOPOLOGÍA: k=3..4]",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.5.sp,
-                color = Color(0xFF00FF66)
+                color = CalcPlotY1
             )
             Text(
                 text = "[ARISTAS: ${hyperedges.size}]",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.5.sp,
-                color = Color(0xFF00FF66)
+                color = CalcPlotY2
             )
             Text(
                 text = "[CONV: ${String.format(java.util.Locale.US, "%.1f", telemetry.convergencePct)}%]",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.5.sp,
-                color = Color(0xFF00FF66)
+                color = CalcPlotY3
             )
             Text(
                 text = "[VIEW: EULER HULL]",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.5.sp,
-                color = Color(0xFF00FF66)
+                color = CalcLcdTextMuted
             )
             Text(
                 text = "[ZOOM: 100%]",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF00E5FF)
+                color = CalcPlotY1
             )
         }
     }
@@ -525,7 +551,7 @@ fun TopGraphActionPill(label: String, color: Color, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .border(1.dp, color.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
-            .background(Color(0xFF06141D), RoundedCornerShape(4.dp))
+            .background(CalcBezel, RoundedCornerShape(4.dp))
             .clickable { onClick() }
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
@@ -657,7 +683,7 @@ private fun DrawScope.drawDensityHeatmap(width: Float, height: Float, nodes: Lis
     for (pt in nodePositions) {
         drawCircle(
             brush = Brush.radialGradient(
-                colors = listOf(Color(0xFF00FF66).copy(alpha = 0.22f), Color(0xFF00E5FF).copy(alpha = 0.08f), Color.Transparent),
+                colors = listOf(CalcPlotY1.copy(alpha = 0.20f), CalcPlotY3.copy(alpha = 0.08f), Color.Transparent),
                 center = pt,
                 radius = 65f
             ),
@@ -669,7 +695,7 @@ private fun DrawScope.drawDensityHeatmap(width: Float, height: Float, nodes: Lis
 
 private fun DrawScope.drawCyberGrid(width: Float, height: Float) {
     val gridSpacing = 32f
-    val gridColor = Color(0xFF0A1F16)
+    val gridColor = CalcLcdGrid
     var x = 0f
     while (x < width) {
         drawLine(gridColor, Offset(x, 0f), Offset(x, height), strokeWidth = 0.7f)
@@ -679,6 +705,25 @@ private fun DrawScope.drawCyberGrid(width: Float, height: Float) {
     while (y < height) {
         drawLine(gridColor, Offset(0f, y), Offset(width, y), strokeWidth = 0.7f)
         y += gridSpacing
+    }
+
+    // Graphing Calculator Cartesian Coordinate Axes (X and Y centered)
+    val midX = width / 2f
+    val midY = height / 2f
+    val axisColor = CalcLcdAxis
+    drawLine(axisColor, Offset(midX, 0f), Offset(midX, height), strokeWidth = 1.2f)
+    drawLine(axisColor, Offset(0f, midY), Offset(width, midY), strokeWidth = 1.2f)
+
+    // Tick marks along axes
+    var tickX = 0f
+    while (tickX < width) {
+        drawLine(axisColor, Offset(tickX, midY - 3f), Offset(tickX, midY + 3f), strokeWidth = 1f)
+        tickX += gridSpacing * 2
+    }
+    var tickY = 0f
+    while (tickY < height) {
+        drawLine(axisColor, Offset(midX - 3f, tickY), Offset(midX + 3f, tickY), strokeWidth = 1f)
+        tickY += gridSpacing * 2
     }
 }
 
@@ -885,11 +930,11 @@ private fun DrawScope.drawTopNodes(
             val isMemory = node.id.contains("memoria", ignoreCase = true)
 
             val color = when {
-                isSensory -> Color(0xFF00FF66)
-                isS4 -> Color(0xFFFF4081)
-                isMemory -> Color(0xFF00E5FF)
-                isHub -> Color(0xFFFFB300)
-                else -> Color(0xFF00E5FF)
+                isSensory -> CalcPlotY3
+                isS4 -> CalcPlotY4
+                isMemory -> CalcPlotY1
+                isHub -> CalcPlotY2
+                else -> CalcPlotY1
             }
 
             val star = if (isHub) " ★" else ""
@@ -905,12 +950,12 @@ private fun DrawScope.drawTopNodes(
         }
     } else {
         listOf(
-            NodeVisual("v1", "s_optico [0.19 J]", Offset(width * 0.12f, height * 0.27f), Color(0xFF00FF66), false, false),
-            NodeVisual("v2", "s_acustico [0.19 J]", Offset(width * 0.11f, height * 0.70f), Color(0xFF00FF66), false, false),
-            NodeVisual("v3", "HUB_CENTRAL [0.19 J] ★", Offset(width * 0.48f, height * 0.27f), Color(0xFFFFB300), true, selectedNodeId == "v3" || selectedNodeId == "hub_central"),
-            NodeVisual("v4", "COG_MONJE [0.19 J] ★", Offset(width * 0.88f, height * 0.27f), Color(0xFFFFB300), true, false),
-            NodeVisual("v5", "cog_memoria [0.19 J]", Offset(width * 0.50f, height * 0.71f), Color(0xFF00E5FF), false, false),
-            NodeVisual("v6", "cog_s4 [0.19 J]", Offset(width * 0.88f, height * 0.71f), Color(0xFFFF4081), false, false)
+            NodeVisual("v1", "s_optico [0.19 J]", Offset(width * 0.12f, height * 0.27f), CalcPlotY3, false, false),
+            NodeVisual("v2", "s_acustico [0.19 J]", Offset(width * 0.11f, height * 0.70f), CalcPlotY3, false, false),
+            NodeVisual("v3", "HUB_CENTRAL [0.19 J] ★", Offset(width * 0.48f, height * 0.27f), CalcPlotY2, true, selectedNodeId == "v3" || selectedNodeId == "hub_central"),
+            NodeVisual("v4", "COG_MONJE [0.19 J] ★", Offset(width * 0.88f, height * 0.27f), CalcPlotY2, true, false),
+            NodeVisual("v5", "cog_memoria [0.19 J]", Offset(width * 0.50f, height * 0.71f), CalcPlotY1, false, false),
+            NodeVisual("v6", "cog_s4 [0.19 J]", Offset(width * 0.88f, height * 0.71f), CalcPlotY4, false, false)
         )
     }
 
@@ -930,16 +975,16 @@ private fun DrawScope.drawTopNodes(
         if (node.isSelected) {
             val reticleRadius = 24f + pulseAlpha * 6f
             drawCircle(
-                color = Color(0xFFFFB300).copy(alpha = 0.8f),
+                color = CalcPlotY2.copy(alpha = 0.85f),
                 radius = reticleRadius,
                 center = Offset(cx, cy),
                 style = Stroke(width = 1.6f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f)))
             )
             // Crosshairs
-            drawLine(Color(0xFFFFB300), Offset(cx - reticleRadius - 4f, cy), Offset(cx - reticleRadius + 4f, cy), strokeWidth = 1.5f)
-            drawLine(Color(0xFFFFB300), Offset(cx + reticleRadius - 4f, cy), Offset(cx + reticleRadius + 4f, cy), strokeWidth = 1.5f)
-            drawLine(Color(0xFFFFB300), Offset(cx, cy - reticleRadius - 4f), Offset(cx, cy - reticleRadius + 4f), strokeWidth = 1.5f)
-            drawLine(Color(0xFFFFB300), Offset(cx, cy + reticleRadius - 4f), Offset(cx, cy + reticleRadius + 4f), strokeWidth = 1.5f)
+            drawLine(CalcPlotY2, Offset(cx - reticleRadius - 4f, cy), Offset(cx - reticleRadius + 4f, cy), strokeWidth = 1.5f)
+            drawLine(CalcPlotY2, Offset(cx + reticleRadius - 4f, cy), Offset(cx + reticleRadius + 4f, cy), strokeWidth = 1.5f)
+            drawLine(CalcPlotY2, Offset(cx, cy - reticleRadius - 4f), Offset(cx, cy - reticleRadius + 4f), strokeWidth = 1.5f)
+            drawLine(CalcPlotY2, Offset(cx, cy + reticleRadius - 4f), Offset(cx, cy + reticleRadius + 4f), strokeWidth = 1.5f)
         }
 
         // Halo
@@ -957,12 +1002,12 @@ private fun DrawScope.drawTopNodes(
         )
         // Center core
         drawCircle(
-            color = Color(0xFF040A10),
+            color = CalcLcdBackground,
             radius = 7f,
             center = Offset(cx, cy)
         )
         drawCircle(
-            color = if (node.isStar) Color(0xFFFFB300) else node.color,
+            color = if (node.isStar) CalcPlotY2 else node.color,
             radius = 3.5f,
             center = Offset(cx, cy)
         )
@@ -976,7 +1021,7 @@ private fun DrawScope.drawTopNodes(
         val boxHeight = 20f
 
         drawRect(
-            color = Color(0xFF050E17),
+            color = CalcBezel,
             topLeft = Offset(cx - boxWidth / 2f, tagY - boxHeight / 2f),
             size = Size(boxWidth, boxHeight)
         )

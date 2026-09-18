@@ -27,6 +27,12 @@ class L13Application : Application(), Configuration.Provider {
         super.onCreate()
 
         try {
+            try {
+                WorkManager.initialize(this, workManagerConfiguration)
+            } catch (_: Exception) {
+                // Ignore if already initialized
+            }
+
             val wm = WorkManager.getInstance(this)
             wm.enqueueUniquePeriodicWork(
                 HealthCheckWorker.UNIQUE_NAME,
@@ -40,7 +46,7 @@ class L13Application : Application(), Configuration.Provider {
                 PeriodicWorkRequestBuilder<CyclePollerWorker>(15, TimeUnit.MINUTES).build(),
             )
         } catch (e: Exception) {
-            android.util.Log.e("L13Application", "WorkManager periodic enqueue caught exception", e)
+            android.util.Log.e("L13Application", "WorkManager initialization/enqueue caught exception", e)
         }
     }
 }

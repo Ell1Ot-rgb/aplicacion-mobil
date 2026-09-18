@@ -116,7 +116,7 @@ fun DashboardScreen(
     val state by viewModel.state.collectAsState()
 
     Scaffold(
-        containerColor = Color(0xFF03070E)
+        containerColor = Color(0xFF000000)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -137,7 +137,7 @@ fun DashboardScreen(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 11.sp,
-                    color = Color(0xFF00FF66)
+                    color = Color(0xFFFFFFFF)
                 )
                 StatusIndicator(ok = state.healthy, label = state.statusText)
             }
@@ -157,11 +157,11 @@ fun DashboardScreen(
 
             // Analytical Decomposition Card
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF080E18)),
-                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF0A0A0A)),
+                shape = RoundedCornerShape(6.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color(0xFF142436), RoundedCornerShape(8.dp))
+                    .border(1.dp, Color(0xFF3F3F46), RoundedCornerShape(6.dp))
             ) {
                 Column(
                     modifier = Modifier
@@ -174,7 +174,7 @@ fun DashboardScreen(
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
                         fontSize = 10.5.sp,
-                        color = Color(0xFF00E5FF)
+                        color = Color(0xFFFFFFFF)
                     )
                     MetricRow("VARIABILIDAD PCA (S4)", "94.8% VAR. RETENIDA")
                     MetricRow("SIMILITUD VSA VECTORIAL", "0.892 (S¹ RESONANTE)")
@@ -190,26 +190,25 @@ fun DashboardScreen(
             ) {
                 Button(
                     onClick = { viewModel.reduce(DashboardEvent.Refresh) },
-                    modifier = Modifier.weight(1f).height(40.dp),
-                    shape = RoundedCornerShape(6.dp),
+                    modifier = Modifier.weight(1f).height(42.dp),
+                    shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF0A1828),
-                        contentColor = Color(0xFF00FF66)
+                        containerColor = Color(0xFFFFFFFF),
+                        contentColor = Color(0xFF000000)
                     ),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .border(1.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp)),
+                            .fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (state.loading) "REFRESCANDO..." else "⚡ REFRESCAR ESTADO",
+                            text = if (state.loading) "REFRESCANDO..." else "[EXE] REFRESCAR ESTADO",
                             fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 10.sp,
-                            color = Color(0xFF00FF66)
+                            fontWeight = FontWeight.Black,
+                            fontSize = 10.5.sp,
+                            color = Color(0xFF000000)
                         )
                     }
                 }

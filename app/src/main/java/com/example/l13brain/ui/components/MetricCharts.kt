@@ -41,6 +41,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.l13brain.model.TelemetryState
+import com.example.l13brain.ui.theme.CalcBevelBorder
+import com.example.l13brain.ui.theme.CalcBezel
+import com.example.l13brain.ui.theme.CalcBorderSubtle
+import com.example.l13brain.ui.theme.CalcChassis
+import com.example.l13brain.ui.theme.CalcLcdAxis
+import com.example.l13brain.ui.theme.CalcLcdBackground
+import com.example.l13brain.ui.theme.CalcLcdGrid
+import com.example.l13brain.ui.theme.CalcLcdText
+import com.example.l13brain.ui.theme.CalcLcdTextMuted
+import com.example.l13brain.ui.theme.CalcPlotY1
+import com.example.l13brain.ui.theme.CalcPlotY2
+import com.example.l13brain.ui.theme.CalcPlotY3
+import com.example.l13brain.ui.theme.CalcPlotY4
+import com.example.l13brain.ui.theme.CalcPlotY5
+import com.example.l13brain.ui.theme.CalcPlotY6
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveBg
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveBorder
+import com.example.l13brain.ui.theme.CalcSoftkeyBg
+import com.example.l13brain.ui.theme.CalcSoftkeyBorder
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -67,8 +86,8 @@ fun TelemetriaTensoresTab(
                 title = "KURAMOTO R(t)",
                 value = String.format("%.3f", telemetry.kuramotoOrderR),
                 badge = "+0.02% STB",
-                badgeColor = Color(0xFF00FF66),
-                badgeBg = Color(0xFF062215),
+                badgeColor = CalcPlotY3,
+                badgeBg = CalcSoftkeyBg,
                 modifier = Modifier.weight(1f)
             )
 
@@ -76,8 +95,8 @@ fun TelemetriaTensoresTab(
                 title = "BETTI NOS",
                 value = "β₀=1, β₁=2",
                 badge = "TORUS S¹×S¹",
-                badgeColor = Color(0xFF00FF66),
-                badgeBg = Color(0xFF062215),
+                badgeColor = CalcPlotY1,
+                badgeBg = CalcSoftkeyBg,
                 modifier = Modifier.weight(1f)
             )
 
@@ -85,8 +104,8 @@ fun TelemetriaTensoresTab(
                 title = "ENTROPÍA SH.",
                 value = String.format("%.3fb", telemetry.entropyShannon),
                 badge = "-0.1% LOW",
-                badgeColor = Color(0xFFFF4081),
-                badgeBg = Color(0xFF220614),
+                badgeColor = CalcPlotY4,
+                badgeBg = CalcSoftkeyBg,
                 modifier = Modifier.weight(1f)
             )
 
@@ -94,8 +113,8 @@ fun TelemetriaTensoresTab(
                 title = "SPECTRAL GAP",
                 value = "0.4281",
                 badge = "λ₁ ÓPTIMO",
-                badgeColor = Color(0xFF00FF66),
-                badgeBg = Color(0xFF062215),
+                badgeColor = CalcPlotY2,
+                badgeBg = CalcSoftkeyBg,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -104,8 +123,8 @@ fun TelemetriaTensoresTab(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF03070E), RoundedCornerShape(8.dp))
-                .border(1.2.dp, Color(0xFF103328), RoundedCornerShape(8.dp))
+                .background(CalcBezel, RoundedCornerShape(8.dp))
+                .border(1.2.dp, CalcBorderSubtle, RoundedCornerShape(8.dp))
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
@@ -115,14 +134,14 @@ fun TelemetriaTensoresTab(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(6.dp).background(Color(0xFF00FF66), CircleShape))
+                    Box(modifier = Modifier.size(6.dp).background(CalcPlotY1, CircleShape))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "FASE KURAMOTO S¹ & RESONANCIA DIFERENCIAL",
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
                         fontSize = 9.5.sp,
-                        color = Color(0xFF00FF66)
+                        color = CalcLcdText
                     )
                 }
 
@@ -134,10 +153,10 @@ fun TelemetriaTensoresTab(
                         text = "[60s TRACE]",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 8.sp,
-                        color = Color(0xFF5B786D)
+                        color = CalcLcdTextMuted
                     )
-                    OutlinedBadge("∠ 53.3°", Color(0xFF00E5FF))
-                    OutlinedBadge("JITTER ±0.02 Hz", Color(0xFFFF4081))
+                    OutlinedBadge("∠ 53.3°", CalcPlotY1)
+                    OutlinedBadge("JITTER ±0.02 Hz", CalcPlotY4)
                 }
             }
 
@@ -146,6 +165,8 @@ fun TelemetriaTensoresTab(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(70.dp)
+                    .background(CalcLcdBackground, RoundedCornerShape(4.dp))
+                    .border(1.dp, CalcBorderSubtle, RoundedCornerShape(4.dp))
             ) {
                 KuramotoSineWaveCanvas(telemetry = telemetry, modifier = Modifier.fillMaxSize())
             }
@@ -159,7 +180,7 @@ fun TelemetriaTensoresTab(
                     "SYNC: φ_ext = ${String.format(java.util.Locale.US, "%.3f", telemetry.kuramotoOrderR)} [R(t)]",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 8.5.sp,
-                    color = Color(0xFF00E5FF)
+                    color = CalcPlotY1
                 )
             }
 
@@ -170,25 +191,25 @@ fun TelemetriaTensoresTab(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("RAM ALLOC Q-POOL", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF5B786D))
+                    Text("RAM ALLOC Q-POOL", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcLcdTextMuted)
                     Text(
                         "${String.format(java.util.Locale.US, "%.1f", telemetry.ramAllocatedGb)}/${String.format(java.util.Locale.US, "%.0f", telemetry.ramTotalGb)} GB [$ramPct%]",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 8.sp,
-                        color = Color(0xFF00E5FF)
+                        color = CalcPlotY1
                     )
                 }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(6.dp)
-                        .background(Color(0xFF081822), RoundedCornerShape(3.dp))
+                        .background(CalcLcdBackground, RoundedCornerShape(3.dp))
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth((telemetry.ramAllocatedGb / telemetry.ramTotalGb).toFloat().coerceIn(0.05f, 1f))
                             .fillMaxHeight()
-                            .background(Color(0xFF00E5FF), RoundedCornerShape(3.dp))
+                            .background(CalcPlotY1, RoundedCornerShape(3.dp))
                     )
                 }
             }
@@ -200,25 +221,25 @@ fun TelemetriaTensoresTab(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("CPU CORE DENSITY", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF5B786D))
+                    Text("CPU CORE DENSITY", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcLcdTextMuted)
                     Text(
                         "${String.format(java.util.Locale.US, "%.1f", cpuLoadVal)}% LOAD",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 8.sp,
-                        color = Color(0xFF00E5FF)
+                        color = CalcPlotY2
                     )
                 }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(6.dp)
-                        .background(Color(0xFF081822), RoundedCornerShape(3.dp))
+                        .background(CalcLcdBackground, RoundedCornerShape(3.dp))
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth((cpuLoadVal / 100f).coerceIn(0.05f, 1f))
                             .fillMaxHeight()
-                            .background(Color(0xFF00E5FF), RoundedCornerShape(3.dp))
+                            .background(CalcPlotY2, RoundedCornerShape(3.dp))
                     )
                 }
             }
@@ -228,8 +249,8 @@ fun TelemetriaTensoresTab(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF03070E), RoundedCornerShape(8.dp))
-                .border(1.2.dp, Color(0xFF103328), RoundedCornerShape(8.dp))
+                .background(CalcBezel, RoundedCornerShape(8.dp))
+                .border(1.2.dp, CalcBorderSubtle, RoundedCornerShape(8.dp))
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -243,11 +264,11 @@ fun TelemetriaTensoresTab(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 9.5.sp,
-                    color = Color(0xFF00FF66)
+                    color = CalcLcdText
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("[42.8% SPARSE]", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00E5FF))
-                    Text("[RANK: [3..4]]", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFFFFB300))
+                    Text("[42.8% SPARSE]", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcPlotY1)
+                    Text("[RANK: [3..4]]", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcPlotY2)
                 }
             }
 
@@ -255,24 +276,24 @@ fun TelemetriaTensoresTab(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF081A12), RoundedCornerShape(2.dp))
+                    .background(CalcLcdBackground, RoundedCornerShape(2.dp))
                     .padding(horizontal = 6.dp, vertical = 2.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("VÉRTICE", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00FF66), modifier = Modifier.weight(1.2f))
-                Text("H_INC [e₁ e₂ e₃]", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00FF66), modifier = Modifier.weight(1.8f))
-                Text("GRADO", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00FF66), modifier = Modifier.weight(1f))
-                Text("ESTADO", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = Color(0xFF00FF66), modifier = Modifier.weight(1f))
+                Text("VÉRTICE", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcPlotY1, modifier = Modifier.weight(1.2f))
+                Text("H_INC [e₁ e₂ e₃]", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcPlotY1, modifier = Modifier.weight(1.8f))
+                Text("GRADO", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcPlotY1, modifier = Modifier.weight(1f))
+                Text("ESTADO", fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = CalcPlotY1, modifier = Modifier.weight(1f))
             }
 
             // Rows
             val matrixRows = listOf(
-                MatrixItem("v1_ir", "[ 1,  0,  0 ]", "deg:1", "PERCEP", Color(0xFF00E5FF), Color(0xFF051C24)),
-                MatrixItem("v2_lidar", "[ 1,  0,  0 ]", "deg:1", "PERCEP", Color(0xFF00E5FF), Color(0xFF051C24)),
-                MatrixItem("v3_hub", "[ 1,  1,  1 ]", "deg:3", "DUAL", Color(0xFFFF4081), Color(0xFF240516)),
-                MatrixItem("v4_monk", "[ 0,  1,  0 ]", "deg:1", "COG", Color(0xFFFF80AB), Color(0xFF240516)),
-                MatrixItem("v5_modal", "[ 1,  0,  1 ]", "deg:2", "BRIDGE", Color(0xFFB388FF), Color(0xFF160524)),
-                MatrixItem("v6_emerg", "[ 0,  0,  1 ]", "deg:1", "RESON", Color(0xFF00E5FF), Color(0xFF051C24))
+                MatrixItem("v1_ir", "[ 1,  0,  0 ]", "deg:1", "PERCEP", CalcPlotY1, CalcSoftkeyBg),
+                MatrixItem("v2_lidar", "[ 1,  0,  0 ]", "deg:1", "PERCEP", CalcPlotY1, CalcSoftkeyBg),
+                MatrixItem("v3_hub", "[ 1,  1,  1 ]", "deg:3", "DUAL", CalcPlotY4, CalcSoftkeyBg),
+                MatrixItem("v4_monk", "[ 0,  1,  0 ]", "deg:1", "COG", CalcPlotY5, CalcSoftkeyBg),
+                MatrixItem("v5_modal", "[ 1,  0,  1 ]", "deg:2", "BRIDGE", CalcPlotY6, CalcSoftkeyBg),
+                MatrixItem("v6_emerg", "[ 0,  0,  1 ]", "deg:1", "RESON", CalcPlotY3, CalcSoftkeyBg)
             )
 
             matrixRows.forEach { item ->
@@ -283,13 +304,13 @@ fun TelemetriaTensoresTab(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(item.name, fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = Color(0xFFCBD5E1), modifier = Modifier.weight(1.2f))
-                    Text(item.matrix, fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = Color(0xFF00FF66), modifier = Modifier.weight(1.8f))
+                    Text(item.name, fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = CalcLcdText, modifier = Modifier.weight(1.2f))
+                    Text(item.matrix, fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = CalcPlotY1, modifier = Modifier.weight(1.8f))
                     Text(
                         item.degree,
                         fontFamily = FontFamily.Monospace,
                         fontSize = 8.5.sp,
-                        color = if (item.degree == "deg:3") Color(0xFFFF4081) else Color(0xFF94A3B8),
+                        color = if (item.degree == "deg:3") CalcPlotY4 else CalcLcdTextMuted,
                         modifier = Modifier.weight(1f)
                     )
                     Box(
@@ -310,8 +331,8 @@ fun TelemetriaTensoresTab(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF03070E), RoundedCornerShape(8.dp))
-                .border(1.2.dp, Color(0xFF103328), RoundedCornerShape(8.dp))
+                .background(CalcBezel, RoundedCornerShape(8.dp))
+                .border(1.2.dp, CalcBorderSubtle, RoundedCornerShape(8.dp))
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -325,22 +346,22 @@ fun TelemetriaTensoresTab(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 9.5.sp,
-                    color = Color(0xFF00FF66)
+                    color = CalcLcdText
                 )
                 Text(
                     text = "5 ACTIVOS • TICK RT",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 8.sp,
-                    color = Color(0xFF5B786D)
+                    color = CalcLcdTextMuted
                 )
             }
 
             // Processes
             val processes = listOf(
-                DaemonItem("1024", "l13_brain_engine", "18.5% CPU", "[RUNNING]", Color(0xFF00E5FF)),
-                DaemonItem("1042", "ws_stream_daemon", "2.1% CPU", "[IDLE]", Color(0xFF94A3B8)),
-                DaemonItem("1088", "ccipca_eigen_4d", "8.4% CPU", "[CALC]", Color(0xFFB388FF)),
-                DaemonItem("1105", "vietoris_rips", "5.2% CPU", "[CONV]", Color(0xFFFF4081))
+                DaemonItem("1024", "l13_brain_engine", "18.5% CPU", "[RUNNING]", CalcPlotY3),
+                DaemonItem("1042", "ws_stream_daemon", "2.1% CPU", "[IDLE]", CalcLcdTextMuted),
+                DaemonItem("1088", "ccipca_eigen_4d", "8.4% CPU", "[CALC]", CalcPlotY6),
+                DaemonItem("1105", "vietoris_rips", "5.2% CPU", "[CONV]", CalcPlotY4)
             )
 
             processes.forEach { p ->
@@ -351,8 +372,8 @@ fun TelemetriaTensoresTab(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("${p.pid}  ${p.name}", fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = Color(0xFFCBD5E1), modifier = Modifier.weight(2f))
-                    Text(p.cpu, fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = Color(0xFF00FF66), modifier = Modifier.weight(1f))
+                    Text("${p.pid}  ${p.name}", fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = CalcLcdText, modifier = Modifier.weight(2f))
+                    Text(p.cpu, fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = CalcPlotY1, modifier = Modifier.weight(1f))
                     Text(p.status, fontFamily = FontFamily.Monospace, fontSize = 8.5.sp, color = p.statusColor, modifier = Modifier.weight(1f))
                 }
             }
@@ -363,9 +384,9 @@ fun TelemetriaTensoresTab(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            BottomActionPill("⏹ HALT ENGINE", Color(0xFFFF4081), Modifier.weight(1f), onHaltEngine)
-            BottomActionPill("🧹 PURGE SWAP", Color(0xFFFFB300), Modifier.weight(1f), onPurgeSwap)
-            BottomActionPill("💾 SNAPSHOT", Color(0xFF00E5FF), Modifier.weight(1f), onTakeSnapshot)
+            BottomActionPill("⏹ HALT ENGINE", CalcPlotY4, Modifier.weight(1f), onHaltEngine)
+            BottomActionPill("🧹 PURGE SWAP", CalcPlotY2, Modifier.weight(1f), onPurgeSwap)
+            BottomActionPill("💾 SNAPSHOT", CalcPlotY1, Modifier.weight(1f), onTakeSnapshot)
         }
     }
 }
@@ -381,8 +402,8 @@ private fun MetricCard(
 ) {
     Column(
         modifier = modifier
-            .background(Color(0xFF03070E), RoundedCornerShape(6.dp))
-            .border(1.dp, Color(0xFF103328), RoundedCornerShape(6.dp))
+            .background(CalcBezel, RoundedCornerShape(6.dp))
+            .border(1.dp, CalcBorderSubtle, RoundedCornerShape(6.dp))
             .padding(5.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
@@ -390,7 +411,7 @@ private fun MetricCard(
             text = title,
             fontFamily = FontFamily.Monospace,
             fontSize = 7.sp,
-            color = Color(0xFF5B786D),
+            color = CalcLcdTextMuted,
             maxLines = 1
         )
         Text(
@@ -398,7 +419,7 @@ private fun MetricCard(
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
             fontSize = 10.5.sp,
-            color = Color(0xFF00E5FF),
+            color = CalcLcdText,
             maxLines = 1
         )
         Box(
@@ -423,7 +444,7 @@ private fun OutlinedBadge(text: String, color: Color) {
     Box(
         modifier = Modifier
             .border(1.dp, color, RoundedCornerShape(3.dp))
-            .background(Color(0xFF040F18), RoundedCornerShape(3.dp))
+            .background(CalcSoftkeyBg, RoundedCornerShape(3.dp))
             .padding(horizontal = 4.dp, vertical = 1.dp)
     ) {
         Text(
@@ -445,7 +466,7 @@ private fun BottomActionPill(
     Box(
         modifier = modifier
             .border(1.dp, color, RoundedCornerShape(4.dp))
-            .background(Color(0xFF07121A), RoundedCornerShape(4.dp))
+            .background(CalcSoftkeyBg, RoundedCornerShape(4.dp))
             .clickable { onClick() }
             .padding(vertical = 6.dp),
         contentAlignment = Alignment.Center
@@ -482,9 +503,9 @@ private fun KuramotoSineWaveCanvas(
         val midY = h / 2f
 
         // Grid lines
-        drawLine(Color(0xFF0A1F16), Offset(0f, midY), Offset(w, midY), strokeWidth = 0.8f)
+        drawLine(CalcLcdGrid, Offset(0f, midY), Offset(w, midY), strokeWidth = 0.8f)
 
-        // Solid Cyan Sine Wave & Magenta Shifted Wave
+        // Solid Y1 Blue Sine Wave & Dashed Y2 Red Shifted Wave
         val pathCyan = Path()
         val pathMagenta = Path()
 
@@ -512,10 +533,10 @@ private fun KuramotoSineWaveCanvas(
             }
         }
 
-        drawPath(pathCyan, Color(0xFF00E5FF), style = Stroke(width = 1.8f))
+        drawPath(pathCyan, CalcPlotY1, style = Stroke(width = 1.8f))
         drawPath(
             pathMagenta,
-            Color(0xFFFF4081),
+            CalcPlotY2,
             style = Stroke(width = 1.5f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 4f)))
         )
 
@@ -523,8 +544,8 @@ private fun KuramotoSineWaveCanvas(
         val trackerNormX = ((phaseAnim / (2 * PI.toFloat())) * 0.8f + 0.1f) % 1.0f
         val trackerX = trackerNormX * w
         val trackerY = midY + sin((trackerNormX * 4f * PI.toFloat()) - phaseAnim) * amp1
-        drawCircle(Color(0xFFFFB300), radius = 4f, center = Offset(trackerX, trackerY))
-        drawCircle(Color.White, radius = 2f, center = Offset(trackerX, trackerY))
+        drawCircle(CalcPlotY3, radius = 4f, center = Offset(trackerX, trackerY))
+        drawCircle(CalcLcdText, radius = 2f, center = Offset(trackerX, trackerY))
     }
 }
 

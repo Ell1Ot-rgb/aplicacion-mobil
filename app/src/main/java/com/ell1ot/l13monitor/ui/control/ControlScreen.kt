@@ -139,7 +139,7 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color(0xFF03070E)
+        containerColor = Color(0xFF000000)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -159,12 +159,12 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 11.sp,
-                    color = Color(0xFF00FF66)
+                    color = Color(0xFFFFFFFF)
                 )
                 Box(
                     modifier = Modifier
-                        .background(Color(0xFF0C1926), RoundedCornerShape(4.dp))
-                        .border(0.8.dp, Color(0xFF00E5FF), RoundedCornerShape(4.dp))
+                        .background(Color(0xFF18181B), RoundedCornerShape(4.dp))
+                        .border(1.dp, Color(0xFF52525B), RoundedCornerShape(4.dp))
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
@@ -172,18 +172,18 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF00E5FF)
+                        color = Color(0xFFFFFFFF)
                     )
                 }
             }
 
             // Slider 1: Thought Vector Intensity
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF080E18)),
-                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF0A0A0A)),
+                shape = RoundedCornerShape(6.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color(0xFF142436), RoundedCornerShape(8.dp))
+                    .border(1.dp, Color(0xFF3F3F46), RoundedCornerShape(6.dp))
             ) {
                 Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(
@@ -195,14 +195,14 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
                             fontFamily = FontFamily.Monospace,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF86EFAC)
+                            color = Color(0xFFFFFFFF)
                         )
                         Text(
                             "${String.format(Locale.US, "%.2f", state.thoughtIntensity)} J",
                             fontFamily = FontFamily.Monospace,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFFB300)
+                            color = Color(0xFFA1A1AA)
                         )
                     }
                     Slider(
@@ -210,9 +210,9 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
                         onValueChange = { viewModel.reduce(ControlEvent.SetThought(it)) },
                         valueRange = 0.05f..1.5f,
                         colors = SliderDefaults.colors(
-                            thumbColor = Color(0xFF00FF66),
-                            activeTrackColor = Color(0xFF00FF66),
-                            inactiveTrackColor = Color(0xFF152A20)
+                            thumbColor = Color(0xFFFFFFFF),
+                            activeTrackColor = Color(0xFFFFFFFF),
+                            inactiveTrackColor = Color(0xFF3F3F46)
                         )
                     )
                 }
@@ -220,11 +220,11 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
 
             // Slider 2: Tau Decay Constant
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF080E18)),
-                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF0A0A0A)),
+                shape = RoundedCornerShape(6.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color(0xFF142436), RoundedCornerShape(8.dp))
+                    .border(1.dp, Color(0xFF3F3F46), RoundedCornerShape(6.dp))
             ) {
                 Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Row(
@@ -236,14 +236,14 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
                             fontFamily = FontFamily.Monospace,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF00E5FF)
+                            color = Color(0xFFFFFFFF)
                         )
                         Text(
                             "${String.format(Locale.US, "%.2f", state.tau)} s",
                             fontFamily = FontFamily.Monospace,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFF007F)
+                            color = Color(0xFFA1A1AA)
                         )
                     }
                     Slider(
@@ -251,9 +251,9 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
                         onValueChange = { viewModel.reduce(ControlEvent.SetTau(it)) },
                         valueRange = 0.05f..2.5f,
                         colors = SliderDefaults.colors(
-                            thumbColor = Color(0xFF00E5FF),
-                            activeTrackColor = Color(0xFF00E5FF),
-                            inactiveTrackColor = Color(0xFF0D2838)
+                            thumbColor = Color(0xFFFFFFFF),
+                            activeTrackColor = Color(0xFFFFFFFF),
+                            inactiveTrackColor = Color(0xFF3F3F46)
                         )
                     )
                 }
@@ -265,20 +265,20 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 ControlActionBtn(
-                    text = "⚡ TRIGGER",
-                    borderColor = Color(0xFF00FF66),
+                    text = "[EXE] TRIGGER",
+                    borderColor = Color(0xFFFFFFFF),
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.reduce(ControlEvent.TriggerCycle) }
                 )
                 ControlActionBtn(
-                    text = "🎯 CALIB. τ",
-                    borderColor = Color(0xFF00E5FF),
+                    text = "[CALC] τ",
+                    borderColor = Color(0xFFE4E4E7),
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.reduce(ControlEvent.Calibrate) }
                 )
                 ControlActionBtn(
-                    text = "⚠️ RESET",
-                    borderColor = Color(0xFFFF3366),
+                    text = "[CLEAR] RST",
+                    borderColor = Color(0xFFA1A1AA),
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.reduce(ControlEvent.Reset) }
                 )
@@ -290,14 +290,14 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 ControlActionBtn(
-                    text = "📥 INGEST β₀=1, β₁=0",
-                    borderColor = Color(0xFFFFB300),
+                    text = "INGEST β₀=1, β₁=0",
+                    borderColor = Color(0xFFD4D4D8),
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.reduce(ControlEvent.Ingest(1, 0)) }
                 )
                 ControlActionBtn(
-                    text = "📥 INGEST β₀=1, β₁=1",
-                    borderColor = Color(0xFFB55FE6),
+                    text = "INGEST β₀=1, β₁=1",
+                    borderColor = Color(0xFFD4D4D8),
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.reduce(ControlEvent.Ingest(1, 1)) }
                 )
@@ -314,24 +314,24 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 10.sp,
-                    color = Color(0xFF86EFAC)
+                    color = Color(0xFFFFFFFF)
                 )
                 Text(
                     text = "${state.commandLogs.size} EN COLA/HISTORIAL",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 8.5.sp,
-                    color = Color.Gray
+                    color = Color(0xFFA1A1AA)
                 )
             }
 
             // Command Bus Log List
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF020509)),
-                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF0A0A0A)),
+                shape = RoundedCornerShape(6.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .border(1.dp, Color(0xFF102030), RoundedCornerShape(8.dp))
+                    .border(1.dp, Color(0xFF3F3F46), RoundedCornerShape(6.dp))
             ) {
                 if (state.commandLogs.isEmpty()) {
                     Box(
@@ -342,7 +342,7 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
                             text = "Esperando comandos de despacho...\nPresione Trigger, Calibrate o Ingest para enviar.",
                             fontFamily = FontFamily.Monospace,
                             fontSize = 10.sp,
-                            color = Color(0xFF335566),
+                            color = Color(0xFFA1A1AA),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
@@ -364,12 +364,7 @@ fun ControlScreen(viewModel: ControlViewModel = hiltViewModel()) {
 
 @Composable
 private fun CommandLogRow(log: CommandLogEntity) {
-    val statusColor = when (log.status) {
-        "ACK" -> Color(0xFF00FF66)
-        "PENDING", "RETRYING" -> Color(0xFFFFB300)
-        "FAILED", "TIMED_OUT" -> Color(0xFFFF3366)
-        else -> Color(0xFF00E5FF)
-    }
+    val statusColor = Color(0xFFFFFFFF)
 
     val timeStr = remember(log.createdAtMillis) {
         try {
@@ -383,8 +378,8 @@ private fun CommandLogRow(log: CommandLogEntity) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF060B12), RoundedCornerShape(4.dp))
-            .border(0.6.dp, Color(0xFF142436), RoundedCornerShape(4.dp))
+            .background(Color(0xFF141414), RoundedCornerShape(4.dp))
+            .border(0.8.dp, Color(0xFF3F3F46), RoundedCornerShape(4.dp))
             .padding(horizontal = 6.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -403,36 +398,35 @@ private fun CommandLogRow(log: CommandLogEntity) {
                 text = "[$timeStr]",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.5.sp,
-                color = Color.Gray
+                color = Color(0xFFA1A1AA)
             )
             Text(
                 text = log.kind,
                 fontFamily = FontFamily.Monospace,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = Color(0xFFFFFFFF)
             )
             Text(
                 text = log.payloadJson.take(24),
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.sp,
-                color = Color(0xFF6B8299),
+                color = Color(0xFFA1A1AA),
                 maxLines = 1
             )
         }
 
         Box(
             modifier = Modifier
-                .background(statusColor.copy(alpha = 0.15f), RoundedCornerShape(2.dp))
-                .border(0.5.dp, statusColor, RoundedCornerShape(2.dp))
+                .background(Color(0xFFFFFFFF), RoundedCornerShape(2.dp))
                 .padding(horizontal = 4.dp, vertical = 1.dp)
         ) {
             Text(
                 text = "${log.status} #${log.attempt}",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 7.5.sp,
-                fontWeight = FontWeight.Bold,
-                color = statusColor
+                fontWeight = FontWeight.Black,
+                color = Color(0xFF000000)
             )
         }
     }
@@ -448,17 +442,17 @@ private fun ControlActionBtn(
     Button(
         onClick = onClick,
         modifier = modifier.height(38.dp),
-        shape = RoundedCornerShape(6.dp),
+        shape = RoundedCornerShape(4.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF091420),
-            contentColor = borderColor
+            containerColor = Color(0xFF18181B),
+            contentColor = Color(0xFFFFFFFF)
         ),
         contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .border(1.dp, borderColor, RoundedCornerShape(4.dp)),
+                .border(1.dp, borderColor, RoundedCornerShape(3.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -466,7 +460,7 @@ private fun ControlActionBtn(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 9.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = borderColor
+                color = Color(0xFFFFFFFF)
             )
         }
     }

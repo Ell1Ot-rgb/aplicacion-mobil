@@ -51,6 +51,41 @@ import com.example.l13brain.model.HyperEdge
 import com.example.l13brain.model.HyperNode
 import com.example.l13brain.model.ReplLogEntry
 import com.example.l13brain.model.TelemetryState
+import com.example.l13brain.ui.theme.CalcBezel
+import com.example.l13brain.ui.theme.CalcBevelBorder
+import com.example.l13brain.ui.theme.CalcBorderSubtle
+import com.example.l13brain.ui.theme.CalcChassis
+import com.example.l13brain.ui.theme.CalcKeyClearBg
+import com.example.l13brain.ui.theme.CalcKeyClearBorder
+import com.example.l13brain.ui.theme.CalcKeyClearText
+import com.example.l13brain.ui.theme.CalcKeyEnterBg
+import com.example.l13brain.ui.theme.CalcKeyEnterBorder
+import com.example.l13brain.ui.theme.CalcKeyEnterText
+import com.example.l13brain.ui.theme.CalcKeyNumBg
+import com.example.l13brain.ui.theme.CalcKeyNumBorder
+import com.example.l13brain.ui.theme.CalcKeyNumText
+import com.example.l13brain.ui.theme.CalcKeyOpBg
+import com.example.l13brain.ui.theme.CalcKeyOpBorder
+import com.example.l13brain.ui.theme.CalcKeyOpText
+import com.example.l13brain.ui.theme.CalcKeyVarBg
+import com.example.l13brain.ui.theme.CalcKeyVarBorder
+import com.example.l13brain.ui.theme.CalcKeyVarText
+import com.example.l13brain.ui.theme.CalcLcdAxis
+import com.example.l13brain.ui.theme.CalcLcdBackground
+import com.example.l13brain.ui.theme.CalcLcdGrid
+import com.example.l13brain.ui.theme.CalcLcdText
+import com.example.l13brain.ui.theme.CalcLcdTextMuted
+import com.example.l13brain.ui.theme.CalcPlotY1
+import com.example.l13brain.ui.theme.CalcPlotY2
+import com.example.l13brain.ui.theme.CalcPlotY3
+import com.example.l13brain.ui.theme.CalcPlotY4
+import com.example.l13brain.ui.theme.CalcPlotY5
+import com.example.l13brain.ui.theme.CalcPlotY6
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveBg
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveBorder
+import com.example.l13brain.ui.theme.CalcSoftkeyActiveText
+import com.example.l13brain.ui.theme.CalcSoftkeyBg
+import com.example.l13brain.ui.theme.CalcSoftkeyBorder
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -95,17 +130,17 @@ fun ReplCalculatorTab(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "┌─ L13 BRAIN INTERACTIVE REPL CALCULATOR",
+                text = "┌─ TI-L13 INTERACTIVE REPL CALCULATOR",
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 fontSize = 11.sp,
-                color = Color(0xFF00FF66)
+                color = CalcPlotY1
             )
 
             Box(
                 modifier = Modifier
-                    .background(Color(0xFF072618), RoundedCornerShape(4.dp))
-                    .border(1.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp))
+                    .background(CalcSoftkeyBg, RoundedCornerShape(4.dp))
+                    .border(1.dp, CalcSoftkeyBorder, RoundedCornerShape(4.dp))
                     .clickable { onExecuteCommand("calc") }
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
@@ -114,7 +149,7 @@ fun ReplCalculatorTab(
                     fontFamily = FontFamily.Monospace,
                     fontSize = 8.5.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF00FF66)
+                    color = CalcPlotY1
                 )
             }
         }
@@ -123,8 +158,8 @@ fun ReplCalculatorTab(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF03070D), RoundedCornerShape(6.dp))
-                .border(1.2.dp, Color(0xFF103328), RoundedCornerShape(6.dp))
+                .background(CalcLcdBackground, RoundedCornerShape(6.dp))
+                .border(1.2.dp, CalcBorderSubtle, RoundedCornerShape(6.dp))
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -135,7 +170,7 @@ fun ReplCalculatorTab(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 10.sp,
                         fontWeight = if (entry.isCommand) FontWeight.Bold else FontWeight.Normal,
-                        color = if (entry.isCommand) Color(0xFF00FF66) else Color(0xFFFFB300)
+                        color = if (entry.isCommand) CalcPlotY1 else CalcPlotY2
                     )
                 }
             } else {
@@ -144,13 +179,13 @@ fun ReplCalculatorTab(
                     fontFamily = FontFamily.Monospace,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF00FF66)
+                    color = CalcPlotY1
                 )
                 Text(
                     text = ">> REESCRITURA APLICADA: 3 hiperaristas generadas | Delta Entropía: -0.042 | Estado S4: Necesario (Box-Phi)",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 10.sp,
-                    color = Color(0xFFFFB300)
+                    color = CalcPlotY2
                 )
             }
         }
@@ -159,8 +194,8 @@ fun ReplCalculatorTab(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF03080F), RoundedCornerShape(6.dp))
-                .border(1.2.dp, Color(0xFF00FF66), RoundedCornerShape(6.dp))
+                .background(CalcLcdBackground, RoundedCornerShape(6.dp))
+                .border(1.2.dp, CalcPlotY1, RoundedCornerShape(6.dp))
                 .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -174,7 +209,7 @@ fun ReplCalculatorTab(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
-                    color = Color(0xFF00FF66)
+                    color = CalcPlotY1
                 )
                 BasicTextField(
                     value = commandInput,
@@ -182,9 +217,9 @@ fun ReplCalculatorTab(
                     textStyle = TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 11.sp,
-                        color = Color(0xFF00FF66)
+                        color = CalcLcdText
                     ),
-                    cursorBrush = SolidColor(Color(0xFF00FF66)),
+                    cursorBrush = SolidColor(CalcPlotY1),
                     singleLine = true,
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
                         imeAction = androidx.compose.ui.text.input.ImeAction.Done
@@ -203,7 +238,8 @@ fun ReplCalculatorTab(
 
             Box(
                 modifier = Modifier
-                    .background(Color(0xFF00FF66), RoundedCornerShape(4.dp))
+                    .background(CalcKeyEnterBg, RoundedCornerShape(4.dp))
+                    .border(1.dp, CalcKeyEnterBorder, RoundedCornerShape(4.dp))
                     .clickable {
                         if (commandInput.isNotBlank()) {
                             onExecuteCommand(commandInput)
@@ -217,7 +253,7 @@ fun ReplCalculatorTab(
                     fontFamily = FontFamily.Monospace,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = CalcKeyEnterText
                 )
             }
         }
@@ -226,8 +262,8 @@ fun ReplCalculatorTab(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF040A12), RoundedCornerShape(6.dp))
-                .border(1.dp, Color(0xFF133829), RoundedCornerShape(6.dp))
+                .background(CalcBezel, RoundedCornerShape(6.dp))
+                .border(1.dp, CalcBevelBorder, RoundedCornerShape(6.dp))
                 .padding(6.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -238,25 +274,25 @@ fun ReplCalculatorTab(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                CalcSpecialPill("🧮 CALCULADORA", Color(0xFF00FF66)) {
+                CalcSpecialPill("🧮 CALCULADORA", CalcPlotY1) {
                     onExecuteCommand("calc")
                 }
-                CalcSpecialPill("⚡ H_A ⊕ H_B", Color(0xFF00FF66)) {
+                CalcSpecialPill("⚡ H_A ⊕ H_B", CalcPlotY3) {
                     onExecuteCommand("sum H_A + H_B")
                 }
-                CalcSpecialPill("⊕ A ⊕ B", Color(0xFF00E5FF)) {
+                CalcSpecialPill("⊕ A ⊕ B", CalcPlotY1) {
                     onExecuteCommand("sum --direct")
                 }
-                CalcSpecialPill("🔥 HotSum V3", Color(0xFFFFB300)) {
+                CalcSpecialPill("🔥 HotSum V3", CalcPlotY2) {
                     onExecuteCommand("hotsum")
                 }
-                CalcSpecialPill("Σ E(v)", Color(0xFFFF4081)) {
+                CalcSpecialPill("Σ E(v)", CalcPlotY4) {
                     onExecuteCommand("sum(E)")
                 }
-                CalcSpecialPill("Σ W(e)", Color(0xFF86EFAC)) {
+                CalcSpecialPill("Σ W(e)", CalcPlotY5) {
                     onExecuteCommand("sum(W)")
                 }
-                CalcSpecialPill("Σ d(v)", Color(0xFFB388FF)) {
+                CalcSpecialPill("Σ d(v)", CalcPlotY6) {
                     onExecuteCommand("sum(d)")
                 }
             }
@@ -281,21 +317,22 @@ fun ReplCalculatorTab(
                                 .height(30.dp)
                                 .background(
                                     when (key) {
-                                        "=" -> Color(0xFF00FF66)
-                                        "C" -> Color(0xFF261014)
-                                        "+", "-", "*", "/", "^" -> Color(0xFF0A2218)
-                                        "(", ")" -> Color(0xFF081B26)
-                                        else -> Color(0xFF061019)
+                                        "=" -> CalcKeyEnterBg
+                                        "C" -> CalcKeyClearBg
+                                        "+", "-", "*", "/", "^" -> CalcKeyOpBg
+                                        "(", ")" -> CalcKeyVarBg
+                                        else -> CalcKeyNumBg
                                     },
                                     RoundedCornerShape(4.dp)
                                 )
                                 .border(
                                     1.dp,
                                     when (key) {
-                                        "=" -> Color(0xFF00FF66)
-                                        "C" -> Color(0xFFFF4081)
-                                        "+", "-", "*", "/", "^" -> Color(0xFF00E5FF)
-                                        else -> Color(0xFF133829)
+                                        "=" -> CalcKeyEnterBorder
+                                        "C" -> CalcKeyClearBorder
+                                        "+", "-", "*", "/", "^" -> CalcKeyOpBorder
+                                        "(", ")" -> CalcKeyVarBorder
+                                        else -> CalcKeyNumBorder
                                     },
                                     RoundedCornerShape(4.dp)
                                 )
@@ -323,10 +360,11 @@ fun ReplCalculatorTab(
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = when (key) {
-                                    "=" -> Color.Black
-                                    "C" -> Color(0xFFFF4081)
-                                    "+", "-", "*", "/", "^" -> Color(0xFF00E5FF)
-                                    else -> Color(0xFFE2E8F0)
+                                    "=" -> CalcKeyEnterText
+                                    "C" -> CalcKeyClearText
+                                    "+", "-", "*", "/", "^" -> CalcKeyOpText
+                                    "(", ")" -> CalcKeyVarText
+                                    else -> CalcKeyNumText
                                 }
                             )
                         }

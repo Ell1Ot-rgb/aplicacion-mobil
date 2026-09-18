@@ -30,6 +30,25 @@ import androidx.compose.ui.unit.sp
 import com.example.l13brain.model.HyperNode
 import com.example.l13brain.model.PhysicsConfig
 import com.example.l13brain.model.ShaderConfig
+import com.example.l13brain.ui.theme.CalcBevelBorder
+import com.example.l13brain.ui.theme.CalcBezel
+import com.example.l13brain.ui.theme.CalcBorderSubtle
+import com.example.l13brain.ui.theme.CalcChassis
+import com.example.l13brain.ui.theme.CalcKeyEnterBg
+import com.example.l13brain.ui.theme.CalcKeyEnterBorder
+import com.example.l13brain.ui.theme.CalcKeyEnterText
+import com.example.l13brain.ui.theme.CalcLcdBackground
+import com.example.l13brain.ui.theme.CalcLcdGrid
+import com.example.l13brain.ui.theme.CalcLcdText
+import com.example.l13brain.ui.theme.CalcLcdTextMuted
+import com.example.l13brain.ui.theme.CalcPlotY1
+import com.example.l13brain.ui.theme.CalcPlotY2
+import com.example.l13brain.ui.theme.CalcPlotY3
+import com.example.l13brain.ui.theme.CalcPlotY4
+import com.example.l13brain.ui.theme.CalcPlotY5
+import com.example.l13brain.ui.theme.CalcPlotY6
+import com.example.l13brain.ui.theme.CalcSoftkeyBg
+import com.example.l13brain.ui.theme.CalcSoftkeyBorder
 
 @Composable
 fun AjustesTab(
@@ -55,8 +74,8 @@ fun AjustesTab(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color(0xFF03070E), RoundedCornerShape(8.dp))
-            .border(1.2.dp, Color(0xFF103328), RoundedCornerShape(8.dp))
+            .background(CalcChassis, RoundedCornerShape(8.dp))
+            .border(1.2.dp, CalcBevelBorder, RoundedCornerShape(8.dp))
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -66,15 +85,15 @@ fun AjustesTab(
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
             fontSize = 11.sp,
-            color = Color(0xFF00FF66)
+            color = CalcPlotY1
         )
 
         if (selectedNode != null) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF07141E), RoundedCornerShape(6.dp))
-                    .border(1.dp, Color(0xFF00E5FF), RoundedCornerShape(6.dp))
+                    .background(CalcLcdBackground, RoundedCornerShape(6.dp))
+                    .border(1.dp, CalcPlotY1, RoundedCornerShape(6.dp))
                     .padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -88,13 +107,13 @@ fun AjustesTab(
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold,
                         fontSize = 10.sp,
-                        color = Color(0xFF00E5FF)
+                        color = CalcPlotY1
                     )
                     Text(
                         text = "ID: ${selectedNode.id}",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.sp,
-                        color = Color(0xFFFFB300)
+                        color = CalcPlotY2
                     )
                 }
 
@@ -106,13 +125,13 @@ fun AjustesTab(
                         text = "ENERGÍA: ${String.format(java.util.Locale.US, "%.2f", selectedNode.energy)} J",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.sp,
-                        color = Color(0xFF00FF66)
+                        color = CalcPlotY3
                     )
                     Text(
                         text = "FASE θ: ${String.format(java.util.Locale.US, "%.2f", selectedNode.phase)} rad",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.sp,
-                        color = Color(0xFFE2E8F0)
+                        color = CalcLcdText
                     )
                 }
 
@@ -120,7 +139,7 @@ fun AjustesTab(
                     text = "ESTADO S4: ${selectedNode.modalState} | POS: (${String.format(java.util.Locale.US, "%.2f", selectedNode.x)}, ${String.format(java.util.Locale.US, "%.2f", selectedNode.y)})",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 8.5.sp,
-                    color = Color(0xFF94A3B8)
+                    color = CalcLcdTextMuted
                 )
 
                 Row(
@@ -129,14 +148,14 @@ fun AjustesTab(
                 ) {
                     InspectorButton(
                         label = "⚡ +0.50J",
-                        color = Color(0xFF00FF66),
+                        color = CalcPlotY3,
                         modifier = Modifier.weight(1f)
                     ) {
                         onInjectEnergyToNode(selectedNode.id, 0.50f)
                     }
                     InspectorButton(
                         label = "🔄 Reset Fase",
-                        color = Color(0xFF00E5FF),
+                        color = CalcPlotY1,
                         modifier = Modifier.weight(1f)
                     ) {
                         onResetNodePhase(selectedNode.id)
@@ -148,7 +167,7 @@ fun AjustesTab(
                 text = "Toca cualquier nodo en el Toposcopio (CH1) para calibrar sus parámetros.",
                 fontFamily = FontFamily.Monospace,
                 fontSize = 9.sp,
-                color = Color(0xFF5B786D)
+                color = CalcLcdTextMuted
             )
         }
 
@@ -157,7 +176,7 @@ fun AjustesTab(
             text = "├── SHADER CONTROLS (CRT) ──────────────────────────────────┤",
             fontFamily = FontFamily.Monospace,
             fontSize = 9.5.sp,
-            color = Color(0xFF00FF66)
+            color = CalcPlotY1
         )
 
         // Scanlines slider
@@ -166,8 +185,8 @@ fun AjustesTab(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Scanlines", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = Color(0xFFCBD5E1))
-                Text("${(scanlines * 100).toInt()}%", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = Color(0xFF00FF66))
+                Text("Scanlines", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = CalcLcdText)
+                Text("${(scanlines * 100).toInt()}%", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = CalcPlotY1)
             }
             Slider(
                 value = scanlines,
@@ -176,9 +195,9 @@ fun AjustesTab(
                     onShaderConfigChange(shaderConfig.copy(scanlineDensity = it))
                 },
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF00FF66),
-                    activeTrackColor = Color(0xFF00FF66),
-                    inactiveTrackColor = Color(0xFF0C2418)
+                    thumbColor = CalcPlotY1,
+                    activeTrackColor = CalcPlotY1,
+                    inactiveTrackColor = CalcLcdGrid
                 ),
                 modifier = Modifier.height(24.dp)
             )
@@ -190,8 +209,8 @@ fun AjustesTab(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Curvatura CRT", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = Color(0xFFCBD5E1))
-                Text("${(curvature * 100).toInt()}%", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = Color(0xFF00FF66))
+                Text("Curvatura CRT", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = CalcLcdText)
+                Text("${(curvature * 100).toInt()}%", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = CalcPlotY1)
             }
             Slider(
                 value = curvature,
@@ -200,9 +219,9 @@ fun AjustesTab(
                     onShaderConfigChange(shaderConfig.copy(barrelCurvature = it))
                 },
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF00FF66),
-                    activeTrackColor = Color(0xFF00FF66),
-                    inactiveTrackColor = Color(0xFF0C2418)
+                    thumbColor = CalcPlotY1,
+                    activeTrackColor = CalcPlotY1,
+                    inactiveTrackColor = CalcLcdGrid
                 ),
                 modifier = Modifier.height(24.dp)
             )
@@ -213,7 +232,7 @@ fun AjustesTab(
             text = "├── PHYSICS PARAMETERS ─────────────────────────────────────┤",
             fontFamily = FontFamily.Monospace,
             fontSize = 9.5.sp,
-            color = Color(0xFF00FF66)
+            color = CalcPlotY1
         )
 
         // Coulomb Repulsion
@@ -222,7 +241,7 @@ fun AjustesTab(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Coulomb Repuls. kr: ${coulombKr.toInt()}", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = Color(0xFFCBD5E1))
+                Text("Coulomb Repuls. kr: ${coulombKr.toInt()}", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = CalcLcdText)
             }
             Slider(
                 value = coulombKr,
@@ -232,9 +251,9 @@ fun AjustesTab(
                 },
                 valueRange = 20f..300f,
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF00FF66),
-                    activeTrackColor = Color(0xFF00FF66),
-                    inactiveTrackColor = Color(0xFF0C2418)
+                    thumbColor = CalcPlotY2,
+                    activeTrackColor = CalcPlotY2,
+                    inactiveTrackColor = CalcLcdGrid
                 ),
                 modifier = Modifier.height(24.dp)
             )
@@ -246,7 +265,7 @@ fun AjustesTab(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Hooke Spring ka: ${String.format(java.util.Locale.US, "%.3f", hookeKa)}", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = Color(0xFFCBD5E1))
+                Text("Hooke Spring ka: ${String.format(java.util.Locale.US, "%.3f", hookeKa)}", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = CalcLcdText)
             }
             Slider(
                 value = hookeKa,
@@ -256,9 +275,9 @@ fun AjustesTab(
                 },
                 valueRange = 0.01f..0.20f,
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF00FF66),
-                    activeTrackColor = Color(0xFF00FF66),
-                    inactiveTrackColor = Color(0xFF0C2418)
+                    thumbColor = CalcPlotY2,
+                    activeTrackColor = CalcPlotY2,
+                    inactiveTrackColor = CalcLcdGrid
                 ),
                 modifier = Modifier.height(24.dp)
             )
@@ -269,7 +288,7 @@ fun AjustesTab(
             text = "├── EXPORT & SNAPSHOT ──────────────────────────────────────┤",
             fontFamily = FontFamily.Monospace,
             fontSize = 9.5.sp,
-            color = Color(0xFF00FF66)
+            color = CalcPlotY1
         )
 
         // Outlined Action Buttons
@@ -277,9 +296,9 @@ fun AjustesTab(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            InspectorButton("[P] Snapshot PNG", Color(0xFFFFB300), Modifier.weight(1f), onExportPng)
-            InspectorButton("[S] Sync Remote", Color(0xFF00E5FF), Modifier.weight(1f), onSyncApi)
-            InspectorButton("[D] Dump JSON", Color(0xFF86EFAC), Modifier.weight(1f), onDumpJson)
+            InspectorButton("[P] Snapshot PNG", CalcPlotY2, Modifier.weight(1f), onExportPng)
+            InspectorButton("[S] Sync Remote", CalcPlotY1, Modifier.weight(1f), onSyncApi)
+            InspectorButton("[D] Dump JSON", CalcPlotY3, Modifier.weight(1f), onDumpJson)
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -288,7 +307,8 @@ fun AjustesTab(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF00FF66), RoundedCornerShape(6.dp))
+                .background(CalcKeyEnterBg, RoundedCornerShape(6.dp))
+                .border(1.dp, CalcKeyEnterBorder, RoundedCornerShape(6.dp))
                 .clickable { onGeminiDiagnosis() }
                 .padding(vertical = 12.dp),
             contentAlignment = Alignment.Center
@@ -298,7 +318,7 @@ fun AjustesTab(
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
-                color = Color.Black
+                color = CalcKeyEnterText
             )
         }
 
@@ -306,8 +326,8 @@ fun AjustesTab(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF061412), RoundedCornerShape(6.dp))
-                    .border(1.dp, Color(0xFF00FF66), RoundedCornerShape(6.dp))
+                    .background(CalcLcdBackground, RoundedCornerShape(6.dp))
+                    .border(1.dp, CalcPlotY1, RoundedCornerShape(6.dp))
                     .padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -316,13 +336,13 @@ fun AjustesTab(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize = 9.5.sp,
-                    color = Color(0xFF00FF66)
+                    color = CalcPlotY1
                 )
                 Text(
                     text = latestDiagnosis,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 8.5.sp,
-                    color = Color(0xFFD1FAE5)
+                    color = CalcLcdText
                 )
             }
         }
@@ -334,7 +354,7 @@ private fun InspectorButton(label: String, color: Color, modifier: Modifier = Mo
     Box(
         modifier = modifier
             .border(1.dp, color, RoundedCornerShape(4.dp))
-            .background(Color(0xFF07121A), RoundedCornerShape(4.dp))
+            .background(CalcSoftkeyBg, RoundedCornerShape(4.dp))
             .clickable { onClick() }
             .padding(vertical = 6.dp, horizontal = 2.dp),
         contentAlignment = Alignment.Center
